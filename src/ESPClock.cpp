@@ -43,13 +43,19 @@
   #include <Ticker.h>
   #include <WiFi.h>
   #include <ESPmDNS.h>
-  #define P_LAT 22
   #define P_A 19
-  #define P_B 23
-  #define P_C 18
+  #define P_B 21
+  #define P_C 4
   #define P_D 5
   #define P_E 15
-  #define P_OE 16
+  #define P_OE 2
+
+  #define P_LAT 22
+  #define MOSI 23
+  #define CLK 18
+
+  #define MISO 19
+  #define SS 5
   Ticker display_ticker;
   hw_timer_t * timer = NULL;
   portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
@@ -449,7 +455,7 @@ void setupDisplay(bool is_enable) {
 
   #endif
   #ifdef ESP32
-    display.begin(16, SPI_BUS_CLK, SPI_BUS_MOSI, 5, 16);
+    display.begin(16, CLK, MOSI, MISO, SS);
     display.setFastUpdate(true);
     
     if (is_enable)
