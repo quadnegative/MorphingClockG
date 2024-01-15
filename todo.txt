@@ -1,0 +1,15 @@
+--DST
+    --Double check setupTimeOffset() logic
+    --?Add DST Rules to config?
+    -- UTC & AZ TZ?
+    --?https://worldtimeapi.org/?
+--Brightness Sensor
+
+--WEB UI
+    --DST 
+        -- Add Custom DT rules
+        -- UTC & AZ TZ?
+    --Add Custom Color pickers
+    --Center Spinner in modal
+    --Add Brightness Auto
+    --?Add reboot button?
