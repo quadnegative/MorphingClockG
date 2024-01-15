@@ -51,11 +51,11 @@
   #define P_OE 2
 
   #define P_LAT 22
-  #define MOSI 23
-  #define CLK 18
+  #define SPI_BUS_MOSI 23
+  #define SPI_BUS_CLK 18
 
-  #define MISO 19
-  #define SS 5
+  #define SPI_BUS_MISO 19
+  #define SPI_BUS_SS 5
   Ticker display_ticker;
   hw_timer_t * timer = NULL;
   portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
@@ -455,7 +455,7 @@ void setupDisplay(bool is_enable) {
 
   #endif
   #ifdef ESP32
-    display.begin(16, CLK, MOSI, MISO, SS);
+    display.begin(16,SPI_BUS_CLK, SPI_BUS_MOSI, SPI_BUS_MISO, SPI_BUS_SS);
     display.setFastUpdate(true);
     
     if (is_enable)
