@@ -5,13 +5,15 @@ https://stackoverflow.com/questions/51077976/gitignore-for-visual-studio-project
     --?Add DST Rules to config?
     -- UTC & AZ TZ?
     --?https://worldtimeapi.org/?
+--Add custom palette
 --Brightness Sensor
 
 --WEB UI
     --DST 
         -- Add Custom DT rules
         -- UTC & AZ TZ?
-    --Add Custom Color pickers
     --Center Spinner in modal
     --Add Brightness Auto
+    --Add Brightness Sensor
     --?Add reboot button?
+    --?Config preview?

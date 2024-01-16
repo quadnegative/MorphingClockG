@@ -24,7 +24,7 @@
 /* #region boards */
 //ESP8266 setup
 #ifdef ESP8266
-  #include <ESP8266WiFi.h>
+  //#include <ESP8266WiFi.h>
   #include <Ticker.h>
   //#include <ESP8266WiFiMulti.h>
   //#include <ESP8266mDNS.h>
@@ -40,8 +40,8 @@
   
 #endif
 #ifdef ESP32
-  //#include <Ticker.h>
-  #include <WiFi.h>
+  #include <Ticker.h>
+  //#include <WiFi.h>
   #include <ESPmDNS.h>
   #define P_LAT 22
   #define P_A 19
@@ -55,7 +55,7 @@
   #define SPI_BUS_MOSI 13
   #define SPI_BUS_MISO 5
   #define SPI_BUS_SS 16
-  //Ticker display_ticker;
+  Ticker display_ticker;
   hw_timer_t * timer = NULL;
   portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 #endif
@@ -456,17 +456,22 @@ void setupDisplay(bool is_enable) {
   #ifdef ESP32
     display.begin(16);
     display.setFastUpdate(true);
+
+    if (is_enable)
+        display_ticker.attach(0.004, display_updater);
+      else
+        display_ticker.detach();
     
-    if (is_enable) {
-      timer = timerBegin(3, 80, true);
-      timerAttachInterrupt(timer, &display_updater, true);
-      timerAlarmWrite(timer, 4000, true);
-      timerAlarmEnable(timer);
-    }
-    else {
-      timerDetachInterrupt(timer);
-      timerAlarmDisable(timer);
-    }
+    // if (is_enable) {
+    //   timer = timerBegin(0, 80, true);
+    //   timerAttachInterrupt(timer, &display_updater, true);
+    //   timerAlarmWrite(timer, 4000, true);
+    //   timerAlarmEnable(timer);
+    // }
+    // else {
+    //   timerDetachInterrupt(timer);
+    //   timerAlarmDisable(timer);
+    // }
   #endif
 }
 
@@ -1173,7 +1178,6 @@ void web_server() {
       }
       
       config = postcfg;
-
       vars_write();
       getWeatherjson(false);
       processWeather(false);
@@ -1283,7 +1287,7 @@ void setup() {
   display.fillScreen(0);
 
   debugln(F("Setup Complete"));
-  vars_write();
+  
   //resetclock();
 }
 
