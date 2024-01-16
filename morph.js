@@ -1,4 +1,6 @@
 var configLoading = false;
+var configUpdating = false;
+var perviousPalette;
 
 function componentToHex(c) {
     var hex = c.toString(16);
@@ -43,6 +45,7 @@ function loadConfig() {
             if (configJSON.WeatherAnimation) $('#WeatherAnimation')[0].checked = true;
             if (configJSON.ColorPalette) {
                 $('*[data-palette="'+configJSON.ColorPalette+'"]')[0].checked = true;
+                perviousPalette =  configJSON.ColorPalette;
                 if ($('input[name="ColorPalette"]:checked:enabled')[0].id.includes('Custom')) {
                     $('#ColorInput').show();
                 }
@@ -69,7 +72,8 @@ function loadConfig() {
 }
 
 function updateConfigJSON() {
-    if (!configLoading) {
+    if (!configLoading && !configUpdating) {
+        //configUpdating = true;
         //Save config
         configJSON = {};
         if ($('#ConfigJSON')[0].innerText) configJSON = JSON.parse($('#ConfigJSON')[0].innerText);
@@ -83,12 +87,12 @@ function updateConfigJSON() {
         }
         configJSON["DST"] = $('input[id="DST"]')[0].checked;
         configJSON["Military"] = $('input[id="Military"]')[0].checked;
-        if ($('input[name="TemperatureUnit"]:checked:enabled')[0].dataset.value == "false") configJSON["Metric"] = false;
+        if ($('input[name="TemperatureUnit"]:checked:enabled')[0] && $('input[name="TemperatureUnit"]:checked:enabled')[0].dataset.value == "false") configJSON["Metric"] = false;
         else configJSON["Metric"] = true;
         configJSON["WeatherAnimation"] = $('input[id="WeatherAnimation"]')[0].checked;
         //probably wrong order
-        configJSON["ColorPalette"] = $('input[name="ColorPalette"]:checked:enabled')[0].dataset.palette
-        if ($('input[name="ColorPalette"]:checked:enabled')[0].id.includes('Custom')) {
+        if ($('input[name="ColorPalette"]:checked:enabled')[0]) configJSON["ColorPalette"] = $('input[name="ColorPalette"]:checked:enabled')[0].dataset.palette
+        if ($('input[name="ColorPalette"]:checked:enabled')[0] && $('input[name="ColorPalette"]:checked:enabled')[0].id.includes('Custom')) {
             $('#ColorInput').show();
             configJSON["ColorPalette"+$('input[name="ColorPalette"]:checked:enabled')[0].dataset.palette] = {
                 "time":hexToRgb($('input[id="TimeColorInput"]')[0].value),
@@ -100,7 +104,7 @@ function updateConfigJSON() {
         else {
             $('#ColorInput').hide();
         }
-        configJSON["Brightness"] = $('input[name="Brightness"]:checked:enabled')[0].dataset.brightness
+        if ($('input[name="Brightness"]:checked:enabled')[0]) configJSON["Brightness"] = $('input[name="Brightness"]:checked:enabled')[0].dataset.brightness
         configJSON["apiKey"] = $('input[id="apiKey"]')[0].value;
         configJSON["GeoLocation"] = $('input[id="GeoLocation"]')[0].value;
         configJSON["SSID"] = $('input[id="SSID"]')[0].value;
@@ -111,17 +115,17 @@ function updateConfigJSON() {
         $('#ConfigJSON')[0].innerText=JSON.stringify(configJSON, null, 4);
         //Load Updates
         //probably wrong order
-        $('*[data-palette="'+configJSON.ColorPalette+'"]')[0].checked = true;
-        if ($('input[name="ColorPalette"]:checked:enabled')[0].id.includes('Custom')) {
-            $('#ColorInput').show();
-            $('input[id="TimeColorInput"]')[0].value = rgbToHex(configJSON["ColorPalette"+configJSON.ColorPalette]["time"]["r"], configJSON["ColorPalette"+configJSON.ColorPalette]["time"]["g"], configJSON["ColorPalette"+configJSON.ColorPalette]["time"]["b"])
-            $('input[id="WindColorInput"]')[0].value = rgbToHex(configJSON["ColorPalette"+configJSON.ColorPalette]["wind"]["r"], configJSON["ColorPalette"+configJSON.ColorPalette]["wind"]["g"], configJSON["ColorPalette"+configJSON.ColorPalette]["wind"]["b"])
-            $('input[id="DateColorInput"]')[0].value = rgbToHex(configJSON["ColorPalette"+configJSON.ColorPalette]["date"]["r"], configJSON["ColorPalette"+configJSON.ColorPalette]["date"]["g"], configJSON["ColorPalette"+configJSON.ColorPalette]["date"]["b"])
-            $('input[id="WeatherColorInput"]')[0].value = rgbToHex(configJSON["ColorPalette"+configJSON.ColorPalette]["weather"]["r"], configJSON["ColorPalette"+configJSON.ColorPalette]["weather"]["g"], configJSON["ColorPalette"+configJSON.ColorPalette]["weather"]["b"])
-        }
-        else {
-            $('#ColorInput').hide();
-        }
+        // if ($('input[name="ColorPalette"]:checked:enabled')[0] && $('input[name="ColorPalette"]:checked:enabled')[0].id.includes('Custom')) {
+        //     if (configJSON["ColorPalette"+$('input[name="ColorPalette"]:checked:enabled')[0].dataset.palette]) {
+        //         console.log("custom palette " + $('input[name="ColorPalette"]:checked:enabled')[0].dataset.palette + " found!");
+        //         //Load that custom palette
+        //         //$('input[id="TimeColorInput"]')[0].value = rgbToHex(configJSON["ColorPalette"+configJSON.ColorPalette]["time"]["r"], configJSON["ColorPalette"+configJSON.ColorPalette]["time"]["g"], configJSON["ColorPalette"+configJSON.ColorPalette]["time"]["b"])
+        //         //$('input[id="WindColorInput"]')[0].value = rgbToHex(configJSON["ColorPalette"+configJSON.ColorPalette]["wind"]["r"], configJSON["ColorPalette"+configJSON.ColorPalette]["wind"]["g"], configJSON["ColorPalette"+configJSON.ColorPalette]["wind"]["b"])
+        //         //$('input[id="DateColorInput"]')[0].value = rgbToHex(configJSON["ColorPalette"+configJSON.ColorPalette]["date"]["r"], configJSON["ColorPalette"+configJSON.ColorPalette]["date"]["g"], configJSON["ColorPalette"+configJSON.ColorPalette]["date"]["b"])
+        //         //$('input[id="WeatherColorInput"]')[0].value = rgbToHex(configJSON["ColorPalette"+configJSON.ColorPalette]["weather"]["r"], configJSON["ColorPalette"+configJSON.ColorPalette]["weather"]["g"], configJSON["ColorPalette"+configJSON.ColorPalette]["weather"]["b"])
+        //     }
+        // }
+        //configUpdating = false;
     }
 }
 

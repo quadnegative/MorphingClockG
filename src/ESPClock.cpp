@@ -40,7 +40,7 @@
   
 #endif
 #ifdef ESP32
-  #include <Ticker.h>
+  //#include <Ticker.h>
   #include <WiFi.h>
   #include <ESPmDNS.h>
   #define P_LAT 22
@@ -50,7 +50,12 @@
   #define P_D 5
   #define P_E 15
   #define P_OE 16
-  Ticker display_ticker;
+  // HW SPI PINS
+  #define SPI_BUS_CLK 14
+  #define SPI_BUS_MOSI 13
+  #define SPI_BUS_MISO 5
+  #define SPI_BUS_SS 16
+  //Ticker display_ticker;
   hw_timer_t * timer = NULL;
   portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 #endif
@@ -71,28 +76,28 @@ Timezone UTC(utcRule);
 TimeChangeRule usEDT = {"EDT", Second, Sun, Mar, 2, -240};  // Eastern Daylight Time = UTC - 4 hours
 TimeChangeRule usEST = {"EST", First, Sun, Nov, 2, -300};   // Eastern Standard Time = UTC - 5 hours
 Timezone usET(usEDT, usEST);
-// // US Central Time Zone (Chicago, Houston)
-// TimeChangeRule usCDT = {"CDT", Second, Sun, Mar, 2, -300};
-// TimeChangeRule usCST = {"CST", First, Sun, Nov, 2, -360};
-// Timezone usCT(usCDT, usCST);
-// // US Mountain Time Zone (Denver, Salt Lake City)
-// TimeChangeRule usMDT = {"MDT", Second, Sun, Mar, 2, -360};
-// TimeChangeRule usMST = {"MST", First, Sun, Nov, 2, -420};
-// Timezone usMT(usMDT, usMST);
-// // Arizona is US Mountain Time Zone but does not use DST
-// Timezone usAZ(usMST);
-// // US Pacific Time Zone (Las Vegas, Los Angeles)
-// TimeChangeRule usPDT = {"PDT", Second, Sun, Mar, 2, -420};
-// TimeChangeRule usPST = {"PST", First, Sun, Nov, 2, -480};
-// Timezone usPT(usPDT, usPST);
-// // US Alaska Standard Time
-// TimeChangeRule usADT = {"ADT", Second, Sun, Mar, 2, -420};
-// TimeChangeRule usAST = {"AST", First, Sun, Nov, 2, -480};
-// Timezone usAT(usADT, usAST);
-// // US Hawaii-Aleutian Standard Time
-// TimeChangeRule usHADT = {"HADT", Second, Sun, Mar, 2, -420};
-// TimeChangeRule usHAST = {"HAST", First, Sun, Nov, 2, -480};
-// Timezone usHAT(usHADT, usHAST);
+// US Central Time Zone (Chicago, Houston)
+TimeChangeRule usCDT = {"CDT", Second, Sun, Mar, 2, -300};
+TimeChangeRule usCST = {"CST", First, Sun, Nov, 2, -360};
+Timezone usCT(usCDT, usCST);
+// US Mountain Time Zone (Denver, Salt Lake City)
+TimeChangeRule usMDT = {"MDT", Second, Sun, Mar, 2, -360};
+TimeChangeRule usMST = {"MST", First, Sun, Nov, 2, -420};
+Timezone usMT(usMDT, usMST);
+// Arizona is US Mountain Time Zone but does not use DST
+Timezone usAZ(usMST);
+// US Pacific Time Zone (Las Vegas, Los Angeles)
+TimeChangeRule usPDT = {"PDT", Second, Sun, Mar, 2, -420};
+TimeChangeRule usPST = {"PST", First, Sun, Nov, 2, -480};
+Timezone usPT(usPDT, usPST);
+// US Alaska Standard Time
+TimeChangeRule usADT = {"ADT", Second, Sun, Mar, 2, -420};
+TimeChangeRule usAST = {"AST", First, Sun, Nov, 2, -480};
+Timezone usAT(usADT, usAST);
+// US Hawaii-Aleutian Standard Time
+TimeChangeRule usHADT = {"HADT", Second, Sun, Mar, 2, -420};
+TimeChangeRule usHAST = {"HAST", First, Sun, Nov, 2, -480};
+Timezone usHAT(usHADT, usHAST);
 
 byte ntpsync = 1;
 //const char ntpsvr[] = "time.google.com"; //"pool.ntp.org";
@@ -438,7 +443,7 @@ void resetclock() {
 
 void setupDisplay(bool is_enable) {
   #ifdef ESP8266
-    display.begin(8);
+    display.begin(16);
     display.setFastUpdate(true);
     //display.setDriverChip(FM6126A);
     //display.setMuxDelay(0,1,0,0,0);
@@ -449,24 +454,19 @@ void setupDisplay(bool is_enable) {
 
   #endif
   #ifdef ESP32
-    display.begin(16, SPI_BUS_CLK, SPI_BUS_MOSI, 5, 16);
+    display.begin(16);
     display.setFastUpdate(true);
     
-    if (is_enable)
-        display_ticker.attach(0.004, display_updater);
-      else
-        display_ticker.detach();
-
-    // if (is_enable) {
-    //   timer = timerBegin(0, 80, true);
-    //   timerAttachInterrupt(timer, &display_updater, true);
-    //   timerAlarmWrite(timer, 4000, true);
-    //   timerAlarmEnable(timer);
-    // }
-    // else {
-    //   timerDetachInterrupt(timer);
-    //   timerAlarmDisable(timer);
-    // }
+    if (is_enable) {
+      timer = timerBegin(3, 80, true);
+      timerAttachInterrupt(timer, &display_updater, true);
+      timerAlarmWrite(timer, 4000, true);
+      timerAlarmEnable(timer);
+    }
+    else {
+      timerDetachInterrupt(timer);
+      timerAlarmDisable(timer);
+    }
   #endif
 }
 
@@ -565,76 +565,76 @@ int setupTimeOffset(bool verbose) {
         if (verbose) debugln(tzOffSet);
       }
     }
-    // else if (config["TimeZone"] == "CST") {
-    //   if (usCT.utcIsDST(now()))
-    //   {
-    //     tzOffSet = (usCDT.offset)/60;
-    //     if (verbose) debug(F("CDT:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    //   else
-    //   {
-    //     tzOffSet = (usCST.offset)/60;
-    //     if (verbose) debug(F("CST:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    // }
-    // else if (config["TimeZone"] == "MST") {
-    //   if (usMT.utcIsDST(now()))
-    //   {
-    //     tzOffSet = (usMDT.offset)/60;
-    //     if (verbose) debug(F("MDT:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    //   else
-    //   {
-    //     tzOffSet = (usMST.offset)/60;
-    //     if (verbose) debug(F("MST:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    // }
-    // else if (config["TimeZone"] == "PST") {
-    //   if (usPT.utcIsDST(now()))
-    //   {
-    //     tzOffSet = (usPDT.offset)/60;
-    //     if (verbose) debug(F("PDT:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    //   else
-    //   {
-    //     tzOffSet = (usPST.offset)/60;
-    //     if (verbose) debug(F("PST:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    // }
-    // else if (config["TimeZone"] == "AST") {
-    //   if (usAT.utcIsDST(now()))
-    //   {
-    //     tzOffSet = (usADT.offset)/60;
-    //     if (verbose) debug(F("ADT:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    //   else
-    //   {
-    //     tzOffSet = (usAST.offset)/60;
-    //     if (verbose) debug(F("AST:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    // }
-    // else if (config["TimeZone"] == "HAST") {
-    //   if (usHAT.utcIsDST(now()))
-    //   {
-    //     tzOffSet = (usHADT.offset)/60;
-    //     if (verbose) debug(F("HADT:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    //   else
-    //   {
-    //     tzOffSet = (usHAST.offset)/60;
-    //     if (verbose) debug(F("HAST:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    // }
+    else if (config["TimeZone"] == "CST") {
+      if (usCT.utcIsDST(now()))
+      {
+        tzOffSet = (usCDT.offset)/60;
+        if (verbose) debug(F("CDT:"));
+        if (verbose) debugln(tzOffSet);
+      }
+      else
+      {
+        tzOffSet = (usCST.offset)/60;
+        if (verbose) debug(F("CST:"));
+        if (verbose) debugln(tzOffSet);
+      }
+    }
+    else if (config["TimeZone"] == "MST") {
+      if (usMT.utcIsDST(now()))
+      {
+        tzOffSet = (usMDT.offset)/60;
+        if (verbose) debug(F("MDT:"));
+        if (verbose) debugln(tzOffSet);
+      }
+      else
+      {
+        tzOffSet = (usMST.offset)/60;
+        if (verbose) debug(F("MST:"));
+        if (verbose) debugln(tzOffSet);
+      }
+    }
+    else if (config["TimeZone"] == "PST") {
+      if (usPT.utcIsDST(now()))
+      {
+        tzOffSet = (usPDT.offset)/60;
+        if (verbose) debug(F("PDT:"));
+        if (verbose) debugln(tzOffSet);
+      }
+      else
+      {
+        tzOffSet = (usPST.offset)/60;
+        if (verbose) debug(F("PST:"));
+        if (verbose) debugln(tzOffSet);
+      }
+    }
+    else if (config["TimeZone"] == "AST") {
+      if (usAT.utcIsDST(now()))
+      {
+        tzOffSet = (usADT.offset)/60;
+        if (verbose) debug(F("ADT:"));
+        if (verbose) debugln(tzOffSet);
+      }
+      else
+      {
+        tzOffSet = (usAST.offset)/60;
+        if (verbose) debug(F("AST:"));
+        if (verbose) debugln(tzOffSet);
+      }
+    }
+    else if (config["TimeZone"] == "HAST") {
+      if (usHAT.utcIsDST(now()))
+      {
+        tzOffSet = (usHADT.offset)/60;
+        if (verbose) debug(F("HADT:"));
+        if (verbose) debugln(tzOffSet);
+      }
+      else
+      {
+        tzOffSet = (usHAST.offset)/60;
+        if (verbose) debug(F("HAST:"));
+        if (verbose) debugln(tzOffSet);
+      }
+    }
     else if (config["TimeZone"] == "CustomST") {
       //Future CustomST Rules from web UI
     }
