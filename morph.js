@@ -1,6 +1,5 @@
 var configLoading = false;
-var configUpdating = false;
-var cc_cyan = "#00FFFF";//(0, 255, 255)
+var cc_cyan = "#001E1E";//(0, 30, 30)
 var cc_ylw = "#2D2D00";//(45, 45, 0)
 var cc_grn = "#002D00";//(0, 45, 0)
 var cc_wht = "#191919";//(25, 25, 25)
@@ -79,9 +78,7 @@ function loadConfig() {
 }
 
 function updateConfigJSON(event) {
-    if (!configLoading && !configUpdating) {
-        //configUpdating = true;
-        //Save config
+    if (!configLoading) {
         configJSON = {};
         if ($('#ConfigJSON')[0].innerText) configJSON = JSON.parse($('#ConfigJSON')[0].innerText);
         if ($('input[name="TimeZone"]:checked:enabled')[0]) {
@@ -99,14 +96,10 @@ function updateConfigJSON(event) {
         if ($('input[name="TemperatureUnit"]:checked:enabled')[0] && $('input[name="TemperatureUnit"]:checked:enabled')[0].dataset.value == "false") configJSON["Metric"] = false;
         else configJSON["Metric"] = true;
         configJSON["WeatherAnimation"] = $('input[id="WeatherAnimation"]')[0].checked;
-        //probably wrong order
         if ($('input[name="ColorPalette"]:checked:enabled')[0]) configJSON["ColorPalette"] = $('input[name="ColorPalette"]:checked:enabled')[0].dataset.palette
         if ($('input[name="ColorPalette"]:checked:enabled')[0] && $('input[name="ColorPalette"]:checked:enabled')[0].id.includes('Custom')) {
             $('#ColorInput').show();
             if (event.target.type == "radio") {
-                //if palette change load
-                console.log("load");
-                //check if custom palette in config
                 if (configJSON["ColorPalette"+configJSON.ColorPalette]) {
                     $('input[id="TimeColorInput"]')[0].value = rgbToHex(configJSON["ColorPalette"+configJSON.ColorPalette]["time"]["r"], configJSON["ColorPalette"+configJSON.ColorPalette]["time"]["g"], configJSON["ColorPalette"+configJSON.ColorPalette]["time"]["b"])
                     $('input[id="WindColorInput"]')[0].value = rgbToHex(configJSON["ColorPalette"+configJSON.ColorPalette]["wind"]["r"], configJSON["ColorPalette"+configJSON.ColorPalette]["wind"]["g"], configJSON["ColorPalette"+configJSON.ColorPalette]["wind"]["b"])
@@ -114,8 +107,6 @@ function updateConfigJSON(event) {
                     $('input[id="WeatherColorInput"]')[0].value = rgbToHex(configJSON["ColorPalette"+configJSON.ColorPalette]["weather"]["r"], configJSON["ColorPalette"+configJSON.ColorPalette]["weather"]["g"], configJSON["ColorPalette"+configJSON.ColorPalette]["weather"]["b"])
                 }
                 else {
-                    //default
-                    console.log("default");
                     $('input[id="TimeColorInput"]')[0].value = cc_cyan;
                     $('input[id="WindColorInput"]')[0].value = cc_ylw;
                     $('input[id="DateColorInput"]')[0].value = cc_grn;
@@ -123,7 +114,6 @@ function updateConfigJSON(event) {
                 }
             }
             else {
-                //else save
                 console.log("save");
                 console.log("ColorPalette"+$('input[name="ColorPalette"]:checked:enabled')[0].dataset.palette);
                 configJSON["ColorPalette"+$('input[name="ColorPalette"]:checked:enabled')[0].dataset.palette] = {

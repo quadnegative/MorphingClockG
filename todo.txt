@@ -6,14 +6,26 @@ https://stackoverflow.com/questions/51077976/gitignore-for-visual-studio-project
     -- UTC & AZ TZ?
     --?https://worldtimeapi.org/?
 --Add custom palette
+--Add ani_speed, weather_refresh, morph_off to config
+    --ESP
+    --UI
+--Add Brightness Auto
+    --ESP
+    --UI
 --Brightness Sensor
+    --ESP
+    --UI
 
 --WEB UI
     --DST 
         -- Add Custom DT rules
         -- UTC & AZ TZ?
+    --Weather API
+        --https://openweathermap.org/current
+        --Lat & Long
+        --City Name
+        --City ID
+        --Zip code
     --Center Spinner in modal
-    --Add Brightness Auto
-    --Add Brightness Sensor
     --?Add reboot button?
-    --?Config preview?
+    --Config preview

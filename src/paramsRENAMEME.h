@@ -7,7 +7,7 @@ JsonDocument DefaultConfig() {
     //open weather map api key 
     //To Get your API Key - https://openweathermap.org/
     doc["apiKey"] = ""; //e.g a hex string like "abcdef0123456789abcdef0123456789"
-    doc["GeoLocation"] = ""; //e.g. "Paris,FR" //the city you want the weather for 
+    doc["GeoLocation"] = ""; //e.g. "Miami,FL,US" //the city you want the weather for 
     doc["TimeZone"] = "EST"; // "-5", "EST", "CST", "MST", "PST", "AST", "HAST"
     doc["DST"] = true;
     doc["Military"] = false;
