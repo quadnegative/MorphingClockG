@@ -14,7 +14,6 @@
 #include "WeatherIcons.h"
 #include <Timezone.h>
 #include <web.h>
-
 #define DEBUG 1
 #define debug(...) \
             do { if (DEBUG) Serial.print(__VA_ARGS__); } while (0)
@@ -54,11 +53,11 @@
   #define SPI_BUS_MOSI 23
   #define SPI_BUS_CLK 18
 
-  #define SPI_BUS_MISO 19
-  #define SPI_BUS_SS 5
+  #define SPI_BUS_MISO 22
+  #define SPI_BUS_SS 7
   Ticker display_ticker;
-  hw_timer_t * timer = NULL;
-  portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+ // hw_timer_t * timer = NULL;
+ // portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 #endif
 
 /* #endregion */
@@ -335,9 +334,10 @@ void display_updater() {
     if (x > 70 or x < 0)
       x = 70;
     // Increment the counter and set the time of ISR
-    portENTER_CRITICAL_ISR(&timerMux);
-    display.display(x);
-    portEXIT_CRITICAL_ISR(&timerMux);
+    //portENTER_CRITICAL_ISR(&timerMux);
+    display.display(1);
+    //delayMicroseconds(0);
+    //portEXIT_CRITICAL_ISR(&timerMux);
   }
 #endif
 /* #endregion */
@@ -442,6 +442,7 @@ void resetclock() {
   #endif
 }
 
+
 void setupDisplay(bool is_enable) {
   #ifdef ESP8266
     display.begin(8);
@@ -462,41 +463,18 @@ void setupDisplay(bool is_enable) {
         display_ticker.attach(0.004, display_updater);
       else
         display_ticker.detach();
-
-    // if (is_enable) {
-    //   timer = timerBegin(0, 80, true);
-    //   timerAttachInterrupt(timer, &display_updater, true);
-    //   timerAlarmWrite(timer, 4000, true);
-    //   timerAlarmEnable(timer);
-    // }
-    // else {
-    //   timerDetachInterrupt(timer);
-    //   timerAlarmDisable(timer);
-    // }
-  #endif
-}
-
-void display_update_enable(bool is_enable) {
-  #ifdef ESP8266
-    if (is_enable)
-      display_ticker.attach(0.004, display_updater);
-    else
-      display_ticker.detach();
-  #endif
-
-  #ifdef ESP32
-    if (is_enable)
-    {
-      timer = timerBegin(0, 80, true);
-      timerAttachInterrupt(timer, &display_updater, true);
-      timerAlarmWrite(timer, 4000, true);
-      timerAlarmEnable(timer);
-    }
-    else
-    {
-      timerDetachInterrupt(timer);
-      timerAlarmDisable(timer);
-    }
+  //  if (is_enable) {
+  //     timer = timerBegin(3, 240, true);
+  //     timerAttachInterrupt(timer, &display_updater,false);
+  //     //timerAttachInterrupt(timer, &dumb_print,false);
+  //     timerAlarmWrite(timer, 2000, true);
+  //     delayMicroseconds(0);
+  //     timerAlarmEnable(timer);
+  //   }
+  //   else {
+  //     timerDetachInterrupt(timer);
+  //     timerAlarmDisable(timer);
+  //    }
   #endif
 }
 
@@ -1258,7 +1236,6 @@ void setup() {
 
   //start display
   setupDisplay(true);
-  //display_update_enable(true);
 
   TFDrawText(&display, String("  MORPH CLOCK  "), 0, 1, cc_blu);
   TFDrawText(&display, String("  STARTING UP  "), 0, 10, cc_blu);
