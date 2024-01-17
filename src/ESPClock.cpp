@@ -16,7 +16,6 @@
 #include <Timezone.h>
 #include <TimezoneRules.h>
 #include <web.h>
-
 #define DEBUG 1
 #define debug(...) \
             do { if (DEBUG) Serial.print(__VA_ARGS__); } while (0)
@@ -60,8 +59,8 @@
   #define SPI_BUS_MISO 19
   #define SPI_BUS_SS 15
   Ticker display_ticker;
-  hw_timer_t * timer = NULL;
-  portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+ // hw_timer_t * timer = NULL;
+ // portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 #endif
 
 /* #endregion */
@@ -302,9 +301,10 @@ void display_updater() {
     if (x > 70 or x < 0)
       x = 70;
     // Increment the counter and set the time of ISR
-    portENTER_CRITICAL_ISR(&timerMux);
-    display.display(x);
-    portEXIT_CRITICAL_ISR(&timerMux);
+    //portENTER_CRITICAL_ISR(&timerMux);
+    display.display(1);
+    //delayMicroseconds(0);
+    //portEXIT_CRITICAL_ISR(&timerMux);
   }
 #endif
 /* #endregion */
@@ -408,6 +408,7 @@ void resetclock() {
     ESP.restart();
   #endif
 }
+
 
 void setupDisplay(bool is_enable) {
   #ifdef ESP8266
