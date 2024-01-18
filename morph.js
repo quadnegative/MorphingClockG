@@ -29,7 +29,6 @@ function loadConfig() {
     $('.modal').modal('show');
     $.getJSON('/config', function(configJSON) {
         if (!jQuery.isEmptyObject({configJSON})) {
-            $("#ConfigJSON")[0].innerText=JSON.stringify(configJSON, null, 4);
             if (configJSON.TimeZone) {
                 if (configJSON.TimeZone.includes('ST')) {
                     $('#'+configJSON.TimeZone)[0].checked = true;
@@ -59,13 +58,27 @@ function loadConfig() {
                     $('#ColorInput').hide();
                 }
             }
-            if (configJSON.Brightness) $('*[data-brightness="'+configJSON.Brightness+'"]')[0].checked = true;
+            if (configJSON.Brightness) {
+                if (configJSON.Brightness == "Auto") {
+                    $('#BrightnessAuto')[0].checked = true;
+                    $('#Brightness').hide();
+                }
+                else {
+                    $('#BrightnessManual')[0].checked = true
+                    $('#Brightness').show();
+                    if (!configJSON.BrightnessValue) configJSON.BrightnessValue = $('#Brightness')[0].value = configJSON.Brightness
+                    else if (configJSON.BrightnessValue) $('#Brightness')[0].value = configJSON.BrightnessValue = configJSON.Brightness;
+                    else $('#Brightness')[0].value = 42;
+                    $('label[for="BrightnessManual"]')[0].innerText = "Manual: " + $('#Brightness')[0].value
+                }
+            }
             if (configJSON.apiKey) $("#apiKey")[0].value=configJSON.apiKey;
             if (configJSON.GeoLocation) $("#GeoLocation")[0].value=configJSON.GeoLocation;
             if (configJSON.SSID) $("#SSID")[0].value=configJSON.SSID;
             if (configJSON.Password) $("#Password")[0].value=configJSON.Password;
             if (configJSON.NTPServer) $("#NTPServer")[0].value=configJSON.NTPServer;
             if (configJSON.Hostname) $("#Hostname")[0].value=configJSON.Hostname;
+            $("#ConfigJSON")[0].innerText=JSON.stringify(configJSON, null, 4);
         }
     })
     .done(function() {
@@ -84,18 +97,18 @@ function updateConfigJSON(event) {
         if ($('input[name="TimeZone"]:checked:enabled')[0]) {
             if ($('input[name="TimeZone"]:checked:enabled')[0].id == "CustomTZ") {
                 $('#CustomTZOffset').show();
-                configJSON["TimeZone"] = $('input[id="CustomTZOffset"]')[0].value;
+                configJSON.TimeZone = $('input[id="CustomTZOffset"]')[0].value;
             }
             else {
                 $('#CustomTZOffset').hide();
-                configJSON["TimeZone"] = $('input[name="TimeZone"]:checked:enabled')[0].id;
+                configJSON.TimeZone = $('input[name="TimeZone"]:checked:enabled')[0].id;
             }
         }
-        configJSON["DST"] = $('input[id="DST"]')[0].checked;
-        configJSON["Military"] = $('input[id="Military"]')[0].checked;
-        if ($('input[name="TemperatureUnit"]:checked:enabled')[0] && $('input[name="TemperatureUnit"]:checked:enabled')[0].dataset.value == "false") configJSON["Metric"] = false;
-        else configJSON["Metric"] = true;
-        configJSON["WeatherAnimation"] = $('input[id="WeatherAnimation"]')[0].checked;
+        configJSON.DST = $('input[id="DST"]')[0].checked;
+        configJSON.Military = $('input[id="Military"]')[0].checked;
+        if ($('input[name="TemperatureUnit"]:checked:enabled')[0] && $('input[name="TemperatureUnit"]:checked:enabled')[0].dataset.value == "false") configJSON.Metric = false;
+        else configJSON.Metric = true;
+        configJSON.WeatherAnimation = $('input[id="WeatherAnimation"]')[0].checked;
         if ($('input[name="ColorPalette"]:checked:enabled')[0]) configJSON["ColorPalette"] = $('input[name="ColorPalette"]:checked:enabled')[0].dataset.palette
         if ($('input[name="ColorPalette"]:checked:enabled')[0] && $('input[name="ColorPalette"]:checked:enabled')[0].id.includes('Custom')) {
             $('#ColorInput').show();
@@ -114,8 +127,6 @@ function updateConfigJSON(event) {
                 }
             }
             else {
-                console.log("save");
-                console.log("ColorPalette"+$('input[name="ColorPalette"]:checked:enabled')[0].dataset.palette);
                 configJSON["ColorPalette"+$('input[name="ColorPalette"]:checked:enabled')[0].dataset.palette] = {
                     "time":hexToRgb($('input[id="TimeColorInput"]')[0].value),
                     "wind":hexToRgb($('input[id="WindColorInput"]')[0].value),
@@ -127,14 +138,32 @@ function updateConfigJSON(event) {
         else {
             $('#ColorInput').hide();
         }
-        if ($('input[name="Brightness"]:checked:enabled')[0]) configJSON["Brightness"] = $('input[name="Brightness"]:checked:enabled')[0].dataset.brightness
-        configJSON["apiKey"] = $('input[id="apiKey"]')[0].value;
-        configJSON["GeoLocation"] = $('input[id="GeoLocation"]')[0].value;
-        configJSON["SSID"] = $('input[id="SSID"]')[0].value;
-        configJSON["Password"] = $('input[id="Password"]')[0].value;
-        configJSON["NTPServer"] = $('input[id="NTPServer"]')[0].value;
-        configJSON["Hostname"] = ($('input[id="Hostname"]')[0].value).toLowerCase();
-        configJSON["DateFormat"] = "M.D.Y";
+        if ($('#BrightnessAuto')[0].checked) {
+            configJSON.Brightness = $('#BrightnessAuto')[0].dataset.brightness
+            $('#Brightness').hide();
+        }
+        else if ($('#BrightnessManual')[0].checked) {
+            $('#Brightness').show();
+            if (event.target.id == "BrightnessManual") {
+                //load from config
+                if (!configJSON.BrightnessValue) configJSON.BrightnessValue = $('#Brightness')[0].value = configJSON.Brightness
+                else if (configJSON.BrightnessValue) $('#Brightness')[0].value = configJSON.Brightness = configJSON.BrightnessValue;
+                else $('#Brightness')[0].value = 42;
+            }
+            else if (event.target.id == "Brightness") {
+                //save to copnfig
+                configJSON.Brightness = $('#Brightness')[0].value
+                configJSON.BrightnessValue = $('#Brightness')[0].value
+                $('label[for="BrightnessManual"]')[0].innerText = "Manual: " + $('#Brightness')[0].value
+            }
+        }
+        configJSON.apiKey = $('input[id="apiKey"]')[0].value;
+        configJSON.GeoLocation = $('input[id="GeoLocation"]')[0].value;
+        configJSON.SSID = $('input[id="SSID"]')[0].value;
+        configJSON.Password = $('input[id="Password"]')[0].value;
+        configJSON.NTPServer = $('input[id="NTPServer"]')[0].value;
+        configJSON.Hostname = ($('input[id="Hostname"]')[0].value).toLowerCase();
+        configJSON.DateFormat = "M.D.Y";
         $('#ConfigJSON')[0].innerText=JSON.stringify(configJSON, null, 4);
     }
 }
@@ -198,3 +227,6 @@ function resetModal() {
 $(window).on('load', function(){
     loadConfig();
 }); 
+$('#Brightness').on('mousemove', function(e) {
+    $('label[for="BrightnessManual"]')[0].innerText = "Manual: " + $(this).val()
+});

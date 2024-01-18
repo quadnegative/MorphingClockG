@@ -1,18 +1,16 @@
 https://stackoverflow.com/questions/13716658/how-to-delete-all-commit-history-in-github
 https://stackoverflow.com/questions/51077976/gitignore-for-visual-studio-project-is-not-working
 --DST
-    --Double check setupTimeOffset() logic
     --?Add DST Rules to config?
     -- UTC & AZ TZ?
     --?https://worldtimeapi.org/?
---Add custom palette
---Add ani_speed, weather_refresh, morph_off to config
+--Add morph_off to config
     --ESP
     --UI
---Add Brightness Auto
+--Add Brightness Schedule
     --ESP
     --UI
---Brightness Sensor
+--Brightness Auto Sensor
     --ESP
     --UI
 
@@ -23,6 +21,7 @@ https://stackoverflow.com/questions/51077976/gitignore-for-visual-studio-project
     --Weather API
         --https://openweathermap.org/current
         --Lat & Long
+            --Auto
         --City Name
         --City ID
         --Zip code

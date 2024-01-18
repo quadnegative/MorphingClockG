@@ -4,6 +4,7 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <HTTPClient.h>
+#include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <PxMatrix.h>
 //#include <TimeLib.h>
@@ -482,7 +483,8 @@ void setupDisplay(bool is_enable) {
   #endif
 }
 
-int connect_wifi(String n_ssid, String n_pass) {
+bool connect_wifi(String n_ssid, String n_pass) {
+  bool valid = false;
   int c_cnt = 0;
   debug(F("Trying WiFi Connect:"));
   debugln(n_ssid);
@@ -498,21 +500,21 @@ int connect_wifi(String n_ssid, String n_pass) {
     c_cnt++;
     if (c_cnt > 50) {
       debugln(F("Wifi Connect Failed"));
-      return 1;
     }
   }
   debugln(F("success!"));
   debug(F("IP Address is: "));
-  debugln(WiFi.localIP());  //
-  return 0;
+  debugln(WiFi.localIP());
+  valid = true;
+  return valid;
 }
 
 void setupWIFI() {
-  if (connect_wifi(config["SSID"].as<String>(), config["Password"].as<String>()) == 1) {  // Try settings in config file
+  if (!connect_wifi(config["SSID"].as<String>(), config["Password"].as<String>())) {  // Try settings in config file
     debugln(F("Cannot connect to anything, RESTART ESP"));
     TFDrawText(&display, String("WIFI FAILED CONFIG"), 1, 10, cc_grn);
     JsonDocument defaultconfig = DefaultConfig();
-    if (connect_wifi(defaultconfig["SSID"].as<String>(), defaultconfig["Password"].as<String>()) == 1) {  // Try settings in params.h
+    if (!connect_wifi(defaultconfig["SSID"].as<String>(), defaultconfig["Password"].as<String>())) {  // Try settings in params.h
       debugln(F("Cannot connect to anything, RESTART ESP"));
       TFDrawText(&display, String("WIFI FAILED PARAMS.H"), 1, 10, cc_grn);
       resetclock();
@@ -699,16 +701,7 @@ void getWeatherjson(bool verbose) {
     debugln(F("Missing API KEY for weather data, skipping"));
     return;
   }
-    if (config["GeoLocation"]=="") {
-      getAutoGeo(true);
-    }
-  //client.setTimeout(500);  //readStringUntil has a default 5 second wait
-  if (client.connect(openweather, 80)) {
-    if (sizeof(config["Lat"])) {
-      Serial.println("/data/2.5/weather?lat=" + config["Lat"].as<String>() + "&lon=" + config["Lon"].as<String>() + "&appid=" + config["apiKey"].as<String>());
-      client.print("/data/2.5/weather?lat=" + config["Lat"].as<String>() + "&lon=" + config["Lon"].as<String>() + "&appid=" + config["apiKey"].as<String>());
-    }
-    if((!sizeof(config["Lat"])))
+  if (client.connect(server, 80)) {
     client.print("GET /data/2.5/weather?q=" + config["GeoLocation"].as<String>() + "&appid=" + config["apiKey"].as<String>() + "&cnt=1");
     if (config["Metric"])
       client.println("&units=metric");
@@ -1166,6 +1159,38 @@ void set_digit_color() {
 /* #endregion */
 
 /* #region WebServer */
+bool validateAPIkey(String key){
+  bool valid = false;
+  const char apiServer[] = "https://api.openweathermap.org/data/2.5/weather?lat=41.4902&lon=-91.5754&appid=";
+  HTTPClient http;
+  http.begin(apiServer+key);
+  int httpResponseCode = http.GET();
+  if (httpResponseCode == 200) {
+    valid = true;
+  } 
+  else if (httpResponseCode == 401) {
+    debugln(F("OpenWeatherMap: Invalid API key"));
+  }
+  else if (httpResponseCode == 429) {
+    debugln(F("OpenWeatherMap: Exceeded API call limit"));
+  }
+  else {
+    debugln(F("OpenWeatherMap: bad response"));
+  }
+  http.end();
+  return valid;
+}
+
+bool validateNTPServer(String NTPServer){
+  bool valid = false;
+  timeClient.end();
+  timeClient.setPoolServerName(NTPServer.c_str());
+  timeClient.begin();
+  if(timeClient.forceUpdate()) valid = true;
+  else debugln("NTPServer: could not connect to " + NTPServer);
+  return valid;
+}
+
 //To find the values they are sandwiched between search and it always ends before "HTTP /"
 //Pidx + ? is length of string searching for ie "?geoloc=" = length 8, pidx + 8
 //pidx2 is end of string location for HTTP /
@@ -1209,13 +1234,36 @@ void web_server() {
 
       JsonDocument postcfg = deserializeConfig(body);
 
-      //Check and Test new WiFi info
-      if (connect_wifi(postcfg["SSID"], postcfg["Password"]) == 1) {
-        debugln(F("Wifi Connect failed, will try prior SSID and Password"));
-        if (connect_wifi(config["SSID"], config["Password"]) == 1)
-          ESP.restart();  //Give up reboot
+      //Validate API Key
+      if (postcfg["apiKey"] != config["apiKey"]) {
+        if (!validateAPIkey(postcfg["apiKey"].as<String>())) {
+          debugln(F("OpenWeatherMap: new key failed, keep existing key"));
+          postcfg["apiKey"] = config["apiKey"];
+        }
       }
-      
+
+      //Validate WiFi Creds
+      if ((postcfg["SSID"] != config["SSID"]) || (postcfg["Password"] != config["Password"])) {
+        if (!connect_wifi(postcfg["SSID"], postcfg["Password"])) {
+          debugln(F("Wifi Connect failed, will try prior SSID and Password"));
+          if (!connect_wifi(config["SSID"], config["Password"])) {
+            ESP.restart();  //Give up reboot
+          }
+          else {
+            postcfg["SSID"] = config["SSID"];
+            postcfg["Password"] = config["Password"];
+          }
+        }
+      }
+
+      //Add Validate NTP Server
+      if (postcfg["NTPServer"] != config["NTPServer"]) {
+        if (!validateNTPServer(postcfg["NTPServer"])) {
+          debugln(F("NTPServer: new server failed, keep existing server"));
+          postcfg["NTPServer"] = config["NTPServer"];
+        }
+      }
+
       config = postcfg;
       vars_write();
       getWeatherjson(false);
@@ -1245,10 +1293,9 @@ void web_server() {
         delay(1);
         httpcli.stop();
 
-        //it_config_vars();
-        //vars_write();
-        //vars_read();
-        //resetclock
+        init_config_vars();
+        vars_write();
+        resetclock;
       }
       else {
         httpcli.println(F("HTTP/1.0 401 Unauthorized"));
