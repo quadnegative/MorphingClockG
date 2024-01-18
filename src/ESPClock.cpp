@@ -87,6 +87,7 @@ int condM = -1;  //-1 - undefined, 0 - unk, 1 - sunny, 2 - cloudy, 3 - overcast,
 String condS = "";
 String Weatherjson = "";
 String externalIp = "";
+String autoGeo = "";
 int wind_nr;
 int xo = 1, yo = 26;
 char use_ani = 0;
@@ -661,7 +662,6 @@ void getWeatherjson(bool verbose) {
   //  "dt":1647516313,"sys":{"type":2,"id":2034311,"country":"US","sunrise":1647516506,
   //  "sunset":1647559782},"timezone":-14400,"id":4597919,"name":"Summerville","cod":200}
 }
-
 void processWeather(bool verbose) {
   String line = Weatherjson;
   if (verbose) debugln("OpenWeatherMap: "+line);
