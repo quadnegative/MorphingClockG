@@ -86,6 +86,7 @@ int wind_speed = -10000;
 int condM = -1;  //-1 - undefined, 0 - unk, 1 - sunny, 2 - cloudy, 3 - overcast, 4 - rainy, 5 - thunders, 6 - snow
 String condS = "";
 String Weatherjson = "";
+String externalIp = "";
 int wind_nr;
 int xo = 1, yo = 26;
 char use_ani = 0;
