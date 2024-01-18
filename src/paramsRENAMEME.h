@@ -1,6 +1,23 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
+
+#ifdef ESP32
+  #define P_A 19
+  #define P_B 21
+  #define P_C 4
+  #define P_D 5
+  #define P_E 15
+  #define P_OE 2
+
+  #define P_LAT 22
+  #define SPI_BUS_MOSI 23
+  #define SPI_BUS_CLK 18
+  #define PxMATRIX_COLOR_DEPTH 1
+  #define SPI_BUS_MISO 22
+  #define SPI_BUS_SS 7
+#endif
+
 JsonDocument DefaultConfig() {
     JsonDocument doc;
 
