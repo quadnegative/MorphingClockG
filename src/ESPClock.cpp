@@ -40,23 +40,9 @@
 #endif
 #ifdef ESP32
   #include <Ticker.h>
-  //#include <WiFi.h>
+  #include <WiFi.h>
   #include <ESPmDNS.h>
-  #define P_A 22
-  #define P_B 21
-  #define P_C 5
-  #define P_D 19
-  #define P_E 15
-  #define P_LAT 4
-  #define P_OE 17
-  // HW SPI PINS
-  #define SPI_BUS_CLK 18
-  #define SPI_BUS_MOSI 23
-  #define SPI_BUS_MISO 19
-  #define SPI_BUS_SS 15
   Ticker display_ticker;
- // hw_timer_t * timer = NULL;
- // portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 #endif
 
 #ifndef PARAMS_H
