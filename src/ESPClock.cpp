@@ -14,6 +14,7 @@
 #include "TinyIcons.h"
 #include "WeatherIcons.h"
 #include <Timezone.h>
+#include <TimezoneRules.h>
 #include <web.h>
 #define DEBUG 1
 #define debug(...) \
@@ -67,46 +68,8 @@ include "params.h"
 /* #region variables */
 JsonDocument config;
 
-// needed variables
-// US Eastern Time Zone (New York, Detroit)
-//TimeChangeRule myDST = {"EDT", Second, Sun, Mar, 2, -240};  // Eastern Daylight Time = UTC - 4 hours
-//TimeChangeRule mySTD = {"EST", First, Sun, Nov, 2, -300};   // Eastern Standard Time = UTC - 5 hours
-// UTC
-TimeChangeRule utcRule = {"UTC", Last, Sun, Mar, 1, 0};     // UTC
-Timezone UTC(utcRule);
-// US Eastern Time Zone (New York, Detroit)
-TimeChangeRule usEDT = {"EDT", Second, Sun, Mar, 2, -240};  // Eastern Daylight Time = UTC - 4 hours
-TimeChangeRule usEST = {"EST", First, Sun, Nov, 2, -300};   // Eastern Standard Time = UTC - 5 hours
-Timezone usET(usEDT, usEST);
-// US Central Time Zone (Chicago, Houston)
-TimeChangeRule usCDT = {"CDT", Second, Sun, Mar, 2, -300};
-TimeChangeRule usCST = {"CST", First, Sun, Nov, 2, -360};
-Timezone usCT(usCDT, usCST);
-// US Mountain Time Zone (Denver, Salt Lake City)
-TimeChangeRule usMDT = {"MDT", Second, Sun, Mar, 2, -360};
-TimeChangeRule usMST = {"MST", First, Sun, Nov, 2, -420};
-Timezone usMT(usMDT, usMST);
-// Arizona is US Mountain Time Zone but does not use DST
-Timezone usAZ(usMST);
-// US Pacific Time Zone (Las Vegas, Los Angeles)
-TimeChangeRule usPDT = {"PDT", Second, Sun, Mar, 2, -420};
-TimeChangeRule usPST = {"PST", First, Sun, Nov, 2, -480};
-Timezone usPT(usPDT, usPST);
-// US Alaska Standard Time
-TimeChangeRule usADT = {"ADT", Second, Sun, Mar, 2, -420};
-TimeChangeRule usAST = {"AST", First, Sun, Nov, 2, -480};
-Timezone usAT(usADT, usAST);
-// US Hawaii-Aleutian Standard Time
-TimeChangeRule usHADT = {"HADT", Second, Sun, Mar, 2, -420};
-TimeChangeRule usHAST = {"HAST", First, Sun, Nov, 2, -480};
-Timezone usHAT(usHADT, usHAST);
-
 byte ntpsync = 1;
-//const char ntpsvr[] = "time.google.com"; //"pool.ntp.org";
-//const char *WiFi_hostname = "MorphClockQ2"; //If you have more than one Morphing Clock you will need to change the hostname
-const char openweather[] = "api.openweathermap.org";
-const String ifconfigme = "http://ifconfig.me/ip"; 
-const String ipapi = "http://ip-api.com/json/";
+const char server[] = "api.openweathermap.org";
 byte hh;
 byte mm;
 byte ss;
@@ -453,8 +416,6 @@ void setupDisplay(bool is_enable) {
   #ifdef ESP8266
     display.begin(16);
     display.setFastUpdate(true);
-    //display.setDriverChip(FM6126A);
-    //display.setMuxDelay(0,1,0,0,0);
     if (is_enable)
         display_ticker.attach(0.004, display_updater);
       else
@@ -469,41 +430,29 @@ void setupDisplay(bool is_enable) {
         display_ticker.attach(0.004, display_updater);
       else
         display_ticker.detach();
-    
-    // if (is_enable) {
-    //   timer = timerBegin(0, 80, true);
-    //   timerAttachInterrupt(timer, &display_updater, true);
-    //   timerAlarmWrite(timer, 4000, true);
-    //   timerAlarmEnable(timer);
-    // }
-    // else {
-    //   timerDetachInterrupt(timer);
-    //   timerAlarmDisable(timer);
-    // }
   #endif
 }
 
 bool connect_wifi(String n_ssid, String n_pass) {
   bool valid = false;
   int c_cnt = 0;
-  debug(F("Trying WiFi Connect:"));
+  debug(F("WIFI: Trying Connection :"));
   debugln(n_ssid);
   WiFi.hostname(config["Hostname"].as<String>());
   WiFi.mode(WIFI_STA);
   WiFi.setSleep(true);
   WiFi.disconnect();
-  //WiFi.setTxPower(WIFI_POWER_8_5dBm);
   WiFi.begin(n_ssid, n_pass);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     debug(".");
     c_cnt++;
     if (c_cnt > 50) {
-      debugln(F("Wifi Connect Failed"));
+      debugln(F("WIFI: Connect Failed"));
     }
   }
-  debugln(F("success!"));
-  debug(F("IP Address is: "));
+  debugln(F("WIFI: Connect Success!"));
+  debug(F("WIFI: IP Address: "));
   debugln(WiFi.localIP());
   valid = true;
   return valid;
@@ -511,11 +460,11 @@ bool connect_wifi(String n_ssid, String n_pass) {
 
 void setupWIFI() {
   if (!connect_wifi(config["SSID"].as<String>(), config["Password"].as<String>())) {  // Try settings in config file
-    debugln(F("Cannot connect to anything, RESTART ESP"));
+    debugln(F("WIFI: Cannot connect to anything, RESTART ESP"));
     TFDrawText(&display, String("WIFI FAILED CONFIG"), 1, 10, cc_grn);
     JsonDocument defaultconfig = DefaultConfig();
     if (!connect_wifi(defaultconfig["SSID"].as<String>(), defaultconfig["Password"].as<String>())) {  // Try settings in params.h
-      debugln(F("Cannot connect to anything, RESTART ESP"));
+      debugln(F("WIFI: Cannot connect to anything, RESTART ESP"));
       TFDrawText(&display, String("WIFI FAILED PARAMS.H"), 1, 10, cc_grn);
       resetclock();
     }
@@ -529,13 +478,23 @@ void setupmDNS(bool verbose) {
 
   #ifdef ESP32
   if (!MDNS.begin(config["Hostname"].as<const char*>())) {
-        debugln(F("Error setting up MDNS responder!"));
+        debugln(F("mDNS: Error setting up responder!"));
         while(1) {
             delay(1000);
         }
     }
-    debugln("mDNS Hostname: " + config["Hostname"].as<String>());
+    debugln("mDNS: Hostname: " + config["Hostname"].as<String>());
   #endif
+}
+
+bool validateNTPServer(String NTPServer){
+  bool valid = false;
+  timeClient.end();
+  timeClient.setPoolServerName(NTPServer.c_str());
+  timeClient.begin();
+  if(timeClient.forceUpdate()) valid = true;
+  else debugln("NTPServer: could not connect to " + NTPServer);
+  return valid;
 }
 
 int setupTimeOffset(bool verbose) {
@@ -648,57 +607,35 @@ void setupNTP(bool verbose) {
   return;
 }
 
-
-
-
-void processautoGeo(bool verbose){
-  String line = autoGeo;
-  JsonDocument doc;
-  if (verbose) debugln(line);
-  String sval = "";
-  if (!line.length())
-    debugln(F("GeoAuto:unable to retrieve data"));
-  else {
-    DeserializationError error = deserializeJson(doc, line.c_str());
-    if (error) return;
-    sval = doc["city"].as<String>();
-    if (verbose) debugln("city:"+ doc["city"].as<String>() );
-    config["City"] = doc["city"].as<String>(); 
-    if (verbose) debugln("region:"+doc["region"].as<String>() );
-    config["Region"] = doc["region"].as<String>(); 
-    if (verbose) debugln("country:"+ doc["countryCode"].as<String>());
-    config["Country"] = doc["countryCode"].as<String>(); 
-    if (verbose) debugln("latitude:"+ doc["lat"].as<String>());
-    config["Lat"] = doc["lat"].as<String>(); 
-    if (verbose) debugln("longitude:"+ doc["lon"].as<String>());
-    config["Lon"] = doc["lon"].as<String>(); 
-    config["GeoLocation"] = doc["city"].as<String>()+","+doc["region"].as<String>()+","+doc["countryCode"].as<String>(); 
+bool validateAPIkey(String key){
+  bool valid = false;
+  if (!sizeof(config["apiKey"])) {
+    debugln(F("OpenWeatherMap: Missing API KEY for weather data, skipping"));
+    return;
   }
-} 
-void getAutoGeo(bool verbose){
+  const char apiServer[] = "https://api.openweathermap.org/data/2.5/weather?lat=41.4902&lon=-91.5754&appid=";
   HTTPClient http;
-  http.begin(ifconfigme);
+  http.begin(apiServer+key);
   int httpResponseCode = http.GET();
-  if (httpResponseCode = 200) {
-    externalIp = http.getString();
-  } else
-  {
-    Serial.println("bad response ifconfig.me");
+  if (httpResponseCode == 200) {
+    valid = true;
+  } 
+  else if (httpResponseCode == 401) {
+    debugln(F("OpenWeatherMap: Invalid API key"));
+  }
+  else if (httpResponseCode == 429) {
+    debugln(F("OpenWeatherMap: Exceeded API call limit"));
+  }
+  else {
+    debugln(F("OpenWeatherMap: bad response"));
   }
   http.end();
-  Serial.println(externalIp);
-  http.begin(ipapi+externalIp);
-  httpResponseCode = http.GET();
-  if (httpResponseCode = 200) {
-    autoGeo = http.getString();
-    if (verbose) debugln(autoGeo);
-  }
-  http.end();
-  processautoGeo(true);
+  return valid;
 }
+
 void getWeatherjson(bool verbose) {
   if (!sizeof(config["apiKey"])) {
-    debugln(F("Missing API KEY for weather data, skipping"));
+    debugln(F("OpenWeatherMap: Missing API KEY for weather data, skipping"));
     return;
   }
   if (client.connect(server, 80)) {
@@ -712,7 +649,7 @@ void getWeatherjson(bool verbose) {
     client.println("Connection: close");
     client.println();
   } else {
-    if (verbose) debugln(F("Weather:unable to connect"));
+    if (verbose) debugln(F("OpenWeatherMap: unable to connect"));
     return;
   }
   Weatherjson = client.readStringUntil('\n');
@@ -727,7 +664,7 @@ void getWeatherjson(bool verbose) {
 }
 void processWeather(bool verbose) {
   String line = Weatherjson;
-  if (verbose) debugln(line);
+  if (verbose) debugln("OpenWeatherMap: "+line);
   
   // Sample of what the weather API sends back
   //  {"coord":{"lon":-80.1757,"lat":33.0185},"weather":[{"id":741,"main":"Fog","description":"fog","icon":"50n"},
@@ -740,7 +677,7 @@ void processWeather(bool verbose) {
   String sval = "";
   
   if (!line.length())
-    debugln(F("Weather:unable to retrieve data"));
+    debugln(F("OpenWeatherMap:unable to retrieve data"));
   else {
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, line.c_str());
@@ -1159,38 +1096,6 @@ void set_digit_color() {
 /* #endregion */
 
 /* #region WebServer */
-bool validateAPIkey(String key){
-  bool valid = false;
-  const char apiServer[] = "https://api.openweathermap.org/data/2.5/weather?lat=41.4902&lon=-91.5754&appid=";
-  HTTPClient http;
-  http.begin(apiServer+key);
-  int httpResponseCode = http.GET();
-  if (httpResponseCode == 200) {
-    valid = true;
-  } 
-  else if (httpResponseCode == 401) {
-    debugln(F("OpenWeatherMap: Invalid API key"));
-  }
-  else if (httpResponseCode == 429) {
-    debugln(F("OpenWeatherMap: Exceeded API call limit"));
-  }
-  else {
-    debugln(F("OpenWeatherMap: bad response"));
-  }
-  http.end();
-  return valid;
-}
-
-bool validateNTPServer(String NTPServer){
-  bool valid = false;
-  timeClient.end();
-  timeClient.setPoolServerName(NTPServer.c_str());
-  timeClient.begin();
-  if(timeClient.forceUpdate()) valid = true;
-  else debugln("NTPServer: could not connect to " + NTPServer);
-  return valid;
-}
-
 //To find the values they are sandwiched between search and it always ends before "HTTP /"
 //Pidx + ? is length of string searching for ie "?geoloc=" = length 8, pidx + 8
 //pidx2 is end of string location for HTTP /
