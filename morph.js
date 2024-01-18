@@ -108,7 +108,7 @@ function updateConfigJSON(event) {
         configJSON.Military = $('input[id="Military"]')[0].checked;
         if ($('input[name="TemperatureUnit"]:checked:enabled')[0] && $('input[name="TemperatureUnit"]:checked:enabled')[0].dataset.value == "false") configJSON.Metric = false;
         else configJSON.Metric = true;
-        configJSON["WeatherAnimation"] = $('input[id="WeatherAnimation"]')[0].checked;
+        configJSON.WeatherAnimation = $('input[id="WeatherAnimation"]')[0].checked;
         if ($('input[name="ColorPalette"]:checked:enabled')[0]) configJSON["ColorPalette"] = $('input[name="ColorPalette"]:checked:enabled')[0].dataset.palette
         if ($('input[name="ColorPalette"]:checked:enabled')[0] && $('input[name="ColorPalette"]:checked:enabled')[0].id.includes('Custom')) {
             $('#ColorInput').show();
