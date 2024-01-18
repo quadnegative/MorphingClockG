@@ -24,38 +24,35 @@
 /* #region boards */
 //ESP8266 setup
 #ifdef ESP8266
-  #include <ESP8266WiFi.h>
+  //#include <ESP8266WiFi.h>
   #include <Ticker.h>
   //#include <ESP8266WiFiMulti.h>
   //#include <ESP8266mDNS.h>
   Ticker display_ticker;
-  #define P_LAT 16
   #define P_A 5
   #define P_B 4
   #define P_C 15
   #define P_D 12
   #define P_E 0
+  #define P_LAT 16
   #define P_OE 2
-
-  
 #endif
 #ifdef ESP32
   #include <Ticker.h>
-  #include <WiFi.h>
+  //#include <WiFi.h>
   #include <ESPmDNS.h>
-  #define P_A 19
+  #define P_A 22
   #define P_B 21
-  #define P_C 4
-  #define P_D 5
+  #define P_C 5
+  #define P_D 19
   #define P_E 15
-  #define P_OE 2
-
-  #define P_LAT 22
-  #define SPI_BUS_MOSI 23
+  #define P_LAT 4
+  #define P_OE 17
+  // HW SPI PINS
   #define SPI_BUS_CLK 18
-  #define PxMATRIX_COLOR_DEPTH 1
-  #define SPI_BUS_MISO 22
-  #define SPI_BUS_SS 7
+  #define SPI_BUS_MOSI 23
+  #define SPI_BUS_MISO 19
+  #define SPI_BUS_SS 15
   Ticker display_ticker;
  // hw_timer_t * timer = NULL;
  // portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
@@ -77,28 +74,28 @@ Timezone UTC(utcRule);
 TimeChangeRule usEDT = {"EDT", Second, Sun, Mar, 2, -240};  // Eastern Daylight Time = UTC - 4 hours
 TimeChangeRule usEST = {"EST", First, Sun, Nov, 2, -300};   // Eastern Standard Time = UTC - 5 hours
 Timezone usET(usEDT, usEST);
-// // US Central Time Zone (Chicago, Houston)
-// TimeChangeRule usCDT = {"CDT", Second, Sun, Mar, 2, -300};
-// TimeChangeRule usCST = {"CST", First, Sun, Nov, 2, -360};
-// Timezone usCT(usCDT, usCST);
-// // US Mountain Time Zone (Denver, Salt Lake City)
-// TimeChangeRule usMDT = {"MDT", Second, Sun, Mar, 2, -360};
-// TimeChangeRule usMST = {"MST", First, Sun, Nov, 2, -420};
-// Timezone usMT(usMDT, usMST);
-// // Arizona is US Mountain Time Zone but does not use DST
-// Timezone usAZ(usMST);
-// // US Pacific Time Zone (Las Vegas, Los Angeles)
-// TimeChangeRule usPDT = {"PDT", Second, Sun, Mar, 2, -420};
-// TimeChangeRule usPST = {"PST", First, Sun, Nov, 2, -480};
-// Timezone usPT(usPDT, usPST);
-// // US Alaska Standard Time
-// TimeChangeRule usADT = {"ADT", Second, Sun, Mar, 2, -420};
-// TimeChangeRule usAST = {"AST", First, Sun, Nov, 2, -480};
-// Timezone usAT(usADT, usAST);
-// // US Hawaii-Aleutian Standard Time
-// TimeChangeRule usHADT = {"HADT", Second, Sun, Mar, 2, -420};
-// TimeChangeRule usHAST = {"HAST", First, Sun, Nov, 2, -480};
-// Timezone usHAT(usHADT, usHAST);
+// US Central Time Zone (Chicago, Houston)
+TimeChangeRule usCDT = {"CDT", Second, Sun, Mar, 2, -300};
+TimeChangeRule usCST = {"CST", First, Sun, Nov, 2, -360};
+Timezone usCT(usCDT, usCST);
+// US Mountain Time Zone (Denver, Salt Lake City)
+TimeChangeRule usMDT = {"MDT", Second, Sun, Mar, 2, -360};
+TimeChangeRule usMST = {"MST", First, Sun, Nov, 2, -420};
+Timezone usMT(usMDT, usMST);
+// Arizona is US Mountain Time Zone but does not use DST
+Timezone usAZ(usMST);
+// US Pacific Time Zone (Las Vegas, Los Angeles)
+TimeChangeRule usPDT = {"PDT", Second, Sun, Mar, 2, -420};
+TimeChangeRule usPST = {"PST", First, Sun, Nov, 2, -480};
+Timezone usPT(usPDT, usPST);
+// US Alaska Standard Time
+TimeChangeRule usADT = {"ADT", Second, Sun, Mar, 2, -420};
+TimeChangeRule usAST = {"AST", First, Sun, Nov, 2, -480};
+Timezone usAT(usADT, usAST);
+// US Hawaii-Aleutian Standard Time
+TimeChangeRule usHADT = {"HADT", Second, Sun, Mar, 2, -420};
+TimeChangeRule usHAST = {"HAST", First, Sun, Nov, 2, -480};
+Timezone usHAT(usHADT, usHAST);
 
 byte ntpsync = 1;
 //const char ntpsvr[] = "time.google.com"; //"pool.ntp.org";
@@ -252,71 +249,71 @@ void select_palette() {
 
   switch (x) {
     default:
-    case 1:
+    case 0:
       cc_time = cc_cyan;
       cc_wind = cc_ylw;
       cc_date = cc_grn;
       cc_wtext = cc_wht;
       break;
-    case 2:
+    case 1:
       cc_time = cc_red;
       cc_wind = cc_ylw;
       cc_date = cc_blu;
       cc_wtext = cc_grn;
       break;
-    case 3:
+    case 2:
       cc_time = cc_blu;
       cc_wind = cc_grn;
       cc_date = cc_ylw;
       cc_wtext = cc_wht;
       break;
-    case 4:
+    case 3:
       cc_time = cc_ylw;
       cc_wind = cc_cyan;
       cc_date = cc_blu;
       cc_wtext = cc_grn;
       break;
-    case 5:
+    case 4:
       cc_time = cc_bblu;
       cc_wind = cc_grn;
       cc_date = cc_ylw;
       cc_wtext = cc_grn;
       break;
-    case 6:
+    case 5:
       cc_time = cc_org;
       cc_wind = cc_red;
       cc_date = cc_grn;
       cc_wtext = cc_ylw;
       break;
-    case 7:
+    case 6:
       cc_time = cc_grn;
       cc_wind = cc_ppl;
       cc_date = cc_cyan;
       cc_wtext = cc_ylw;
       break;
+    case 7:
+      cc_time = display.color565(config["ColorPalette7"]["time"]["r"], config["ColorPalette7"]["time"]["g"], config["ColorPalette7"]["time"]["b"]);
+      cc_wind = display.color565(config["ColorPalette7"]["wind"]["r"], config["ColorPalette7"]["wind"]["g"], config["ColorPalette7"]["wind"]["b"]);
+      cc_date = display.color565(config["ColorPalette7"]["date"]["r"], config["ColorPalette7"]["date"]["g"], config["ColorPalette7"]["date"]["b"]);
+      cc_wtext = display.color565(config["ColorPalette7"]["weather"]["r"], config["ColorPalette7"]["weather"]["g"], config["ColorPalette7"]["weather"]["b"]);
+      break;
     case 8:
-      cc_time = cc_cyan;
-      cc_wind = cc_ylw;
-      cc_date = cc_grn;
-      cc_wtext = cc_wht;
+      cc_time = display.color565(config["ColorPalette8"]["time"]["r"], config["ColorPalette8"]["time"]["g"], config["ColorPalette8"]["time"]["b"]);
+      cc_wind = display.color565(config["ColorPalette8"]["wind"]["r"], config["ColorPalette8"]["wind"]["g"], config["ColorPalette8"]["wind"]["b"]);
+      cc_date = display.color565(config["ColorPalette8"]["date"]["r"], config["ColorPalette8"]["date"]["g"], config["ColorPalette8"]["date"]["b"]);
+      cc_wtext = display.color565(config["ColorPalette8"]["weather"]["r"], config["ColorPalette8"]["weather"]["g"], config["ColorPalette8"]["weather"]["b"]);
       break;
     case 9:
-      cc_time = cc_cyan;
-      cc_wind = cc_ylw;
-      cc_date = cc_grn;
-      cc_wtext = cc_wht;
+      cc_time = display.color565(config["ColorPalette9"]["time"]["r"], config["ColorPalette9"]["time"]["g"], config["ColorPalette9"]["time"]["b"]);
+      cc_wind = display.color565(config["ColorPalette9"]["wind"]["r"], config["ColorPalette9"]["wind"]["g"], config["ColorPalette9"]["wind"]["b"]);
+      cc_date = display.color565(config["ColorPalette9"]["date"]["r"], config["ColorPalette9"]["date"]["g"], config["ColorPalette9"]["date"]["b"]);
+      cc_wtext = display.color565(config["ColorPalette9"]["weather"]["r"], config["ColorPalette9"]["weather"]["g"], config["ColorPalette9"]["weather"]["b"]);
       break;
     case 10:
-      cc_time = cc_cyan;
-      cc_wind = cc_ylw;
-      cc_date = cc_grn;
-      cc_wtext = cc_wht;
-      break;
-    case 11:
-      cc_time = cc_cyan;
-      cc_wind = cc_ylw;
-      cc_date = cc_grn;
-      cc_wtext = cc_wht;
+      cc_time = display.color565(config["ColorPalette10"]["time"]["r"], config["ColorPalette10"]["time"]["g"], config["ColorPalette10"]["time"]["b"]);
+      cc_wind = display.color565(config["ColorPalette10"]["wind"]["r"], config["ColorPalette10"]["wind"]["g"], config["ColorPalette10"]["wind"]["b"]);
+      cc_date = display.color565(config["ColorPalette10"]["date"]["r"], config["ColorPalette10"]["date"]["g"], config["ColorPalette10"]["date"]["b"]);
+      cc_wtext = display.color565(config["ColorPalette10"]["weather"]["r"], config["Custom7"]["ColorPalette10"]["g"], config["ColorPalette10"]["weather"]["b"]);
       break;
   }
 }
@@ -450,7 +447,7 @@ void resetclock() {
 
 void setupDisplay(bool is_enable) {
   #ifdef ESP8266
-    display.begin(8);
+    display.begin(16);
     display.setFastUpdate(true);
     //display.setDriverChip(FM6126A);
     //display.setMuxDelay(0,1,0,0,0);
@@ -461,25 +458,24 @@ void setupDisplay(bool is_enable) {
 
   #endif
   #ifdef ESP32
-    display.begin(16,SPI_BUS_CLK, SPI_BUS_MOSI, SPI_BUS_MISO, SPI_BUS_SS);
+    display.begin(16, SPI_BUS_CLK, SPI_BUS_MOSI, SPI_BUS_MISO, SPI_BUS_SS);
     display.setFastUpdate(true);
-    
+
     if (is_enable)
         display_ticker.attach(0.004, display_updater);
       else
         display_ticker.detach();
-  //  if (is_enable) {
-  //     timer = timerBegin(3, 240, true);
-  //     timerAttachInterrupt(timer, &display_updater,false);
-  //     //timerAttachInterrupt(timer, &dumb_print,false);
-  //     timerAlarmWrite(timer, 2000, true);
-  //     delayMicroseconds(0);
-  //     timerAlarmEnable(timer);
-  //   }
-  //   else {
-  //     timerDetachInterrupt(timer);
-  //     timerAlarmDisable(timer);
-  //    }
+    
+    // if (is_enable) {
+    //   timer = timerBegin(0, 80, true);
+    //   timerAttachInterrupt(timer, &display_updater, true);
+    //   timerAlarmWrite(timer, 4000, true);
+    //   timerAlarmEnable(timer);
+    // }
+    // else {
+    //   timerDetachInterrupt(timer);
+    //   timerAlarmDisable(timer);
+    // }
   #endif
 }
 
@@ -489,6 +485,7 @@ int connect_wifi(String n_ssid, String n_pass) {
   debugln(n_ssid);
   WiFi.hostname(config["Hostname"].as<String>());
   WiFi.mode(WIFI_STA);
+  WiFi.setSleep(true);
   WiFi.disconnect();
   //WiFi.setTxPower(WIFI_POWER_8_5dBm);
   WiFi.begin(n_ssid, n_pass);
@@ -554,76 +551,76 @@ int setupTimeOffset(bool verbose) {
         if (verbose) debugln(tzOffSet);
       }
     }
-    // else if (config["TimeZone"] == "CST") {
-    //   if (usCT.utcIsDST(now()))
-    //   {
-    //     tzOffSet = (usCDT.offset)/60;
-    //     if (verbose) debug(F("CDT:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    //   else
-    //   {
-    //     tzOffSet = (usCST.offset)/60;
-    //     if (verbose) debug(F("CST:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    // }
-    // else if (config["TimeZone"] == "MST") {
-    //   if (usMT.utcIsDST(now()))
-    //   {
-    //     tzOffSet = (usMDT.offset)/60;
-    //     if (verbose) debug(F("MDT:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    //   else
-    //   {
-    //     tzOffSet = (usMST.offset)/60;
-    //     if (verbose) debug(F("MST:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    // }
-    // else if (config["TimeZone"] == "PST") {
-    //   if (usPT.utcIsDST(now()))
-    //   {
-    //     tzOffSet = (usPDT.offset)/60;
-    //     if (verbose) debug(F("PDT:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    //   else
-    //   {
-    //     tzOffSet = (usPST.offset)/60;
-    //     if (verbose) debug(F("PST:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    // }
-    // else if (config["TimeZone"] == "AST") {
-    //   if (usAT.utcIsDST(now()))
-    //   {
-    //     tzOffSet = (usADT.offset)/60;
-    //     if (verbose) debug(F("ADT:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    //   else
-    //   {
-    //     tzOffSet = (usAST.offset)/60;
-    //     if (verbose) debug(F("AST:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    // }
-    // else if (config["TimeZone"] == "HAST") {
-    //   if (usHAT.utcIsDST(now()))
-    //   {
-    //     tzOffSet = (usHADT.offset)/60;
-    //     if (verbose) debug(F("HADT:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    //   else
-    //   {
-    //     tzOffSet = (usHAST.offset)/60;
-    //     if (verbose) debug(F("HAST:"));
-    //     if (verbose) debugln(tzOffSet);
-    //   }
-    // }
+    else if (config["TimeZone"] == "CST") {
+      if (usCT.utcIsDST(now()))
+      {
+        tzOffSet = (usCDT.offset)/60;
+        if (verbose) debug(F("CDT:"));
+        if (verbose) debugln(tzOffSet);
+      }
+      else
+      {
+        tzOffSet = (usCST.offset)/60;
+        if (verbose) debug(F("CST:"));
+        if (verbose) debugln(tzOffSet);
+      }
+    }
+    else if (config["TimeZone"] == "MST") {
+      if (usMT.utcIsDST(now()))
+      {
+        tzOffSet = (usMDT.offset)/60;
+        if (verbose) debug(F("MDT:"));
+        if (verbose) debugln(tzOffSet);
+      }
+      else
+      {
+        tzOffSet = (usMST.offset)/60;
+        if (verbose) debug(F("MST:"));
+        if (verbose) debugln(tzOffSet);
+      }
+    }
+    else if (config["TimeZone"] == "PST") {
+      if (usPT.utcIsDST(now()))
+      {
+        tzOffSet = (usPDT.offset)/60;
+        if (verbose) debug(F("PDT:"));
+        if (verbose) debugln(tzOffSet);
+      }
+      else
+      {
+        tzOffSet = (usPST.offset)/60;
+        if (verbose) debug(F("PST:"));
+        if (verbose) debugln(tzOffSet);
+      }
+    }
+    else if (config["TimeZone"] == "AST") {
+      if (usAT.utcIsDST(now()))
+      {
+        tzOffSet = (usADT.offset)/60;
+        if (verbose) debug(F("ADT:"));
+        if (verbose) debugln(tzOffSet);
+      }
+      else
+      {
+        tzOffSet = (usAST.offset)/60;
+        if (verbose) debug(F("AST:"));
+        if (verbose) debugln(tzOffSet);
+      }
+    }
+    else if (config["TimeZone"] == "HAST") {
+      if (usHAT.utcIsDST(now()))
+      {
+        tzOffSet = (usHADT.offset)/60;
+        if (verbose) debug(F("HADT:"));
+        if (verbose) debugln(tzOffSet);
+      }
+      else
+      {
+        tzOffSet = (usHAST.offset)/60;
+        if (verbose) debug(F("HAST:"));
+        if (verbose) debugln(tzOffSet);
+      }
+    }
     else if (config["TimeZone"] == "CustomST") {
       //Future CustomST Rules from web UI
     }
@@ -1217,7 +1214,6 @@ void web_server() {
       }
       
       config = postcfg;
-
       vars_write();
       getWeatherjson(false);
       processWeather(false);
@@ -1326,7 +1322,7 @@ void setup() {
   display.fillScreen(0);
 
   debugln(F("Setup Complete"));
-  vars_write();
+  
   //resetclock();
 }
 
