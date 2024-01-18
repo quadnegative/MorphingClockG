@@ -604,7 +604,7 @@ bool validateAPIkey(String key){
   bool valid = false;
   if (!sizeof(config["apiKey"])) {
     debugln(F("OpenWeatherMap: Missing API KEY for weather data, skipping"));
-    return;
+    return valid;
   }
   const char apiServer[] = "https://api.openweathermap.org/data/2.5/weather?lat=41.4902&lon=-91.5754&appid=";
   HTTPClient http;
