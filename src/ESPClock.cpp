@@ -42,7 +42,7 @@
   #include <Ticker.h>
   //#include <WiFi.h>
   #include <ESPmDNS.h>
-  #define P_A 19
+  #define P_A 22
   #define P_B 21
   #define P_C 4
   #define P_D 5
