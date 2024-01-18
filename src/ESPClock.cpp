@@ -1,4 +1,3 @@
-#include "params.h"
 //#include <FS.h>
 #include "LittleFS.h"
 #include <WiFiManager.h>
@@ -63,6 +62,10 @@
  // portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 #endif
 
+#ifndef PARAMS_H
+#define PARAMS_H
+include "params.h"
+#endif
 /* #endregion */
 
 /* #region variables */
