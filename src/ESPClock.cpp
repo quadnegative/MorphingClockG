@@ -4,6 +4,7 @@
 #include <WiFiManager.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
+#include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <PxMatrix.h>
 //#include <TimeLib.h>
@@ -103,8 +104,8 @@ byte ntpsync = 1;
 //const char ntpsvr[] = "time.google.com"; //"pool.ntp.org";
 //const char *WiFi_hostname = "MorphClockQ2"; //If you have more than one Morphing Clock you will need to change the hostname
 const char openweather[] = "api.openweathermap.org";
-const char ifconfigme[] = "ifconfig.me"; 
-const char ipapi[] = "ip-api.com";
+const String ifconfigme = "http://ifconfig.me/ip"; 
+const String ipapi = "http://ip-api.com/json/";
 byte hh;
 byte mm;
 byte ss;
@@ -122,6 +123,7 @@ int condM = -1;  //-1 - undefined, 0 - unk, 1 - sunny, 2 - cloudy, 3 - overcast,
 String condS = "";
 String Weatherjson = "";
 String externalIp = "";
+String autoGeo = "";
 int wind_nr;
 int xo = 1, yo = 26;
 char use_ani = 0;
@@ -644,35 +646,69 @@ void setupNTP(bool verbose) {
   return;
 }
 
+
+
+
+void processautoGeo(bool verbose){
+  String line = autoGeo;
+  JsonDocument doc;
+  if (verbose) debugln(line);
+  String sval = "";
+  if (!line.length())
+    debugln(F("GeoAuto:unable to retrieve data"));
+  else {
+    DeserializationError error = deserializeJson(doc, line.c_str());
+    if (error) return;
+    sval = doc["city"].as<String>();
+    if (verbose) debugln("city:"+ doc["city"].as<String>() );
+    config["City"] = doc["city"].as<String>(); 
+    if (verbose) debugln("region:"+doc["region"].as<String>() );
+    config["Region"] = doc["region"].as<String>(); 
+    if (verbose) debugln("country:"+ doc["countryCode"].as<String>());
+    config["Country"] = doc["countryCode"].as<String>(); 
+    if (verbose) debugln("latitude:"+ doc["lat"].as<String>());
+    config["Lat"] = doc["lat"].as<String>(); 
+    if (verbose) debugln("longitude:"+ doc["lon"].as<String>());
+    config["Lon"] = doc["lon"].as<String>(); 
+    config["GeoLocation"] = doc["city"].as<String>()+","+doc["region"].as<String>()+","+doc["countryCode"].as<String>(); 
+  }
+} 
+void getAutoGeo(bool verbose){
+  HTTPClient http;
+  http.begin(ifconfigme);
+  int httpResponseCode = http.GET();
+  if (httpResponseCode = 200) {
+    externalIp = http.getString();
+  } else
+  {
+    Serial.println("bad response ifconfig.me");
+  }
+  http.end();
+  Serial.println(externalIp);
+  http.begin(ipapi+externalIp);
+  httpResponseCode = http.GET();
+  if (httpResponseCode = 200) {
+    autoGeo = http.getString();
+    if (verbose) debugln(autoGeo);
+  }
+  http.end();
+  processautoGeo(true);
+}
 void getWeatherjson(bool verbose) {
   if (!sizeof(config["apiKey"])) {
     debugln(F("Missing API KEY for weather data, skipping"));
     return;
   }
-  if (!sizeof(config["GeoLocation"])){
-    if(client.connect(ifconfigme,80)){
-      client.print("GET");
-      client.println("Host: ifconfig.me");
-      client.println("Connection: close");
-      client.println();
-    }else{
-    if (verbose) debugln(F("ifconfig.me unreachable"));
-      return;
+    if (config["GeoLocation"]=="") {
+      getAutoGeo(true);
     }
-    externalIp = client.readStringUntil('\n');
-    if(client.connect(ipapi,80)){
-      client.print("GET /#"+externalIp);
-      client.println("Host: api.openweathermap.org");
-      client.println("Connection: close");
-      client.println();
-    }else {
-      if (verbose) debugln(F("ip-api unreacheable"));
-      return;
-    }
-  }
-
   //client.setTimeout(500);  //readStringUntil has a default 5 second wait
   if (client.connect(openweather, 80)) {
+    if (sizeof(config["Lat"])) {
+      Serial.println("/data/2.5/weather?lat=" + config["Lat"].as<String>() + "&lon=" + config["Lon"].as<String>() + "&appid=" + config["apiKey"].as<String>());
+      client.print("/data/2.5/weather?lat=" + config["Lat"].as<String>() + "&lon=" + config["Lon"].as<String>() + "&appid=" + config["apiKey"].as<String>());
+    }
+    if((!sizeof(config["Lat"])))
     client.print("GET /data/2.5/weather?q=" + config["GeoLocation"].as<String>() + "&appid=" + config["apiKey"].as<String>() + "&cnt=1");
     if (config["Metric"])
       client.println("&units=metric");
@@ -696,7 +732,6 @@ void getWeatherjson(bool verbose) {
   //  "dt":1647516313,"sys":{"type":2,"id":2034311,"country":"US","sunrise":1647516506,
   //  "sunset":1647559782},"timezone":-14400,"id":4597919,"name":"Summerville","cod":200}
 }
-
 void processWeather(bool verbose) {
   String line = Weatherjson;
   if (verbose) debugln(line);
