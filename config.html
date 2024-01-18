@@ -17,7 +17,7 @@
         </a>
       </header>
       <!--Row 0-->
-      <div class="row "><tt>
+      <!-- <div class="row "><tt>
         <div class="col-md-4 offset-md-4">
           <div class="container text-center">
             <div class="row justify-content-center">
@@ -41,7 +41,7 @@
             </div>
           </div>
         </div></tt>
-      </div>
+      </div> -->
       <!--Row 1-->
       <div class="row">
         <div class="col-md-4">
@@ -238,23 +238,12 @@
                   </label>
                 </div>
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="Brightness" id="Brightness70" data-brightness="70" onchange="updateConfigJSON(event)">
-                  <label class="form-check-label" for="Brightness70">
-                      70
+                  <input class="form-check-input" type="radio" name="Brightness" id="BrightnessManual" data-brightness="Manual" onchange="updateConfigJSON(event)">
+                  <label class="form-check-label" for="BrightnessManual">
+                      Manual
                   </label>
                 </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="Brightness" id="Brightness35" data-brightness="35" onchange="updateConfigJSON(event)">
-                  <label class="form-check-label" for="Brightness35">
-                      35
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="Brightness" id="BrightnessOff" data-brightness="0" onchange="updateConfigJSON(event)">
-                  <label class="form-check-label" for="BrightnessOff">
-                      Off
-                  </label>
-                </div>
+                <input type="range" class="form-range" id="Brightness" data-bs-toggle="tooltip" data-bs-placement="top" title="Tooltip on top" onchange="updateConfigJSON(event)">
               </div>
           </div>
         </div>

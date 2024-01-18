@@ -1181,10 +1181,9 @@ void web_server() {
         delay(1);
         httpcli.stop();
 
-        //it_config_vars();
-        //vars_write();
-        //vars_read();
-        //resetclock
+        init_config_vars();
+        vars_write();
+        resetclock;
       }
       else {
         httpcli.println(F("HTTP/1.0 401 Unauthorized"));
