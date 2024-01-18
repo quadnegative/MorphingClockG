@@ -1,4 +1,3 @@
-#include "params.h"
 //#include <FS.h>
 #include "LittleFS.h"
 #include <WiFiManager.h>
@@ -43,24 +42,13 @@
   #include <Ticker.h>
   #include <WiFi.h>
   #include <ESPmDNS.h>
-  #define P_A 19
-  #define P_B 21
-  #define P_C 4
-  #define P_D 5
-  #define P_E 15
-  #define P_OE 2
-
-  #define P_LAT 22
-  #define SPI_BUS_MOSI 23
-  #define SPI_BUS_CLK 18
-  #define PxMATRIX_COLOR_DEPTH 1
-  #define SPI_BUS_MISO 22
-  #define SPI_BUS_SS 7
   Ticker display_ticker;
- // hw_timer_t * timer = NULL;
- // portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 #endif
 
+#ifndef PARAMS_H
+#define PARAMS_H
+  #include "params.h"
+#endif
 /* #endregion */
 
 /* #region variables */
@@ -124,6 +112,7 @@ String condS = "";
 String Weatherjson = "";
 String externalIp = "";
 String autoGeo = "";
+String geoJson = "";
 int wind_nr;
 int xo = 1, yo = 26;
 char use_ani = 0;
@@ -670,9 +659,23 @@ void processautoGeo(bool verbose){
     config["Lat"] = doc["lat"].as<String>(); 
     if (verbose) debugln("longitude:"+ doc["lon"].as<String>());
     config["Lon"] = doc["lon"].as<String>(); 
-    config["GeoLocation"] = doc["city"].as<String>()+","+doc["region"].as<String>()+","+doc["countryCode"].as<String>(); 
   }
 } 
+
+void processGeo(bool verbose){
+  String line = geoJson;
+  JsonDocument doc;
+  if (verbose) debugln(line);
+  String sval = "";
+  if (!line.length())
+    debugln(F("GeoAuto:unable to retrieve data"));
+  else {
+    config["lon"]=doc["lon"].as<String>();
+    if (verbose) debugln("Longitude:"+ doc["lon"].as<String>() );
+    config["lat"]=doc["lat"].as<String>();
+    if (verbose) debugln("Latitude:"+ doc["lat"].as<String>() );
+  }
+}
 void getAutoGeo(bool verbose){
   HTTPClient http;
   http.begin(ifconfigme);
@@ -694,19 +697,31 @@ void getAutoGeo(bool verbose){
   http.end();
   processautoGeo(true);
 }
+
 void getWeatherjson(bool verbose) {
   if (!sizeof(config["apiKey"])) {
     debugln(F("Missing API KEY for weather data, skipping"));
     return;
   }
-    if (config["GeoLocation"]=="") {
+    if (((config["GeoLocation"]=="")|| (config["GeoLocation"]=="")) &&  (( (config["lon"]=="") || (!sizeof(config["long"])) )) && ((config["lat"]=="") || (!sizeof(config["long"])) )) {
       getAutoGeo(true);
+    }
+    if ((config["GeoLocation"]!="") && (( (config["lon"]=="") || (!sizeof(config["long"])) )) && ((config["lat"]=="") || (!sizeof(config["long"])) )) {
+      client.connect(openweather,80);
+      Serial.println("GET /geo/1.0/direct?q=" + config["GeoLocation"].as<String>() + "&appid=" + config["apiKey"].as<String>());
+      client.print("GET /geo/1.0/direct?q=" + config["GeoLocation"].as<String>() + "&appid=" + config["apiKey"].as<String>());
+      client.println("Host: api.openweathermap.org");
+      client.println("Connection: close");
+      client.println();
+      geoJson = client.readStringUntil('\n');
+      client.disconnect();
+      processGeo(true);
     }
   //client.setTimeout(500);  //readStringUntil has a default 5 second wait
   if (client.connect(openweather, 80)) {
     if (sizeof(config["Lat"])) {
       Serial.println("/data/2.5/weather?lat=" + config["Lat"].as<String>() + "&lon=" + config["Lon"].as<String>() + "&appid=" + config["apiKey"].as<String>());
-      client.print("/data/2.5/weather?lat=" + config["Lat"].as<String>() + "&lon=" + config["Lon"].as<String>() + "&appid=" + config["apiKey"].as<String>());
+        client.print("GET /data/2.5/weather?lat=" + config["Lat"].as<String>() + "&lon=" + config["Lon"].as<String>() + "&appid=" + config["apiKey"].as<String>());
     }
     if((!sizeof(config["Lat"])))
     client.print("GET /data/2.5/weather?q=" + config["GeoLocation"].as<String>() + "&appid=" + config["apiKey"].as<String>() + "&cnt=1");
@@ -723,6 +738,7 @@ void getWeatherjson(bool verbose) {
     return;
   }
   Weatherjson = client.readStringUntil('\n');
+  client.disconnect();
   return;
   // Sample of what the weather API sends back
   //  {"coord":{"lon":-80.1757,"lat":33.0185},"weather":[{"id":741,"main":"Fog","description":"fog","icon":"50n"},
@@ -732,6 +748,7 @@ void getWeatherjson(bool verbose) {
   //  "dt":1647516313,"sys":{"type":2,"id":2034311,"country":"US","sunrise":1647516506,
   //  "sunset":1647559782},"timezone":-14400,"id":4597919,"name":"Summerville","cod":200}
 }
+
 void processWeather(bool verbose) {
   String line = Weatherjson;
   if (verbose) debugln(line);
