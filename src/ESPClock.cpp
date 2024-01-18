@@ -47,7 +47,7 @@
 
 #ifndef PARAMS_H
 #define PARAMS_H
-include "params.h"
+#include "params.h"
 #endif
 /* #endregion */
 
