@@ -3,6 +3,7 @@
         "cstdlib": "cpp",
         "*.tcc": "cpp",
         "string": "cpp",
-        "system_error": "cpp"
+        "system_error": "cpp",
+        "random": "cpp"
     }
 }
