@@ -52,7 +52,7 @@
   #define P_LAT 22
   #define SPI_BUS_MOSI 23
   #define SPI_BUS_CLK 18
-
+  #define PxMATRIX_COLOR_DEPTH 1
   #define SPI_BUS_MISO 22
   #define SPI_BUS_SS 7
   Ticker display_ticker;
@@ -102,7 +102,9 @@ Timezone usET(usEDT, usEST);
 byte ntpsync = 1;
 //const char ntpsvr[] = "time.google.com"; //"pool.ntp.org";
 //const char *WiFi_hostname = "MorphClockQ2"; //If you have more than one Morphing Clock you will need to change the hostname
-const char server[] = "api.openweathermap.org";
+const char openweather[] = "api.openweathermap.org";
+const char ifconfigme[] = "ifconfig.me"; 
+const char ipapi[] = "ip-api.com";
 byte hh;
 byte mm;
 byte ss;
@@ -119,6 +121,7 @@ int wind_speed = -10000;
 int condM = -1;  //-1 - undefined, 0 - unk, 1 - sunny, 2 - cloudy, 3 - overcast, 4 - rainy, 5 - thunders, 6 - snow
 String condS = "";
 String Weatherjson = "";
+String externalIp = "";
 int wind_nr;
 int xo = 1, yo = 26;
 char use_ani = 0;
@@ -646,8 +649,30 @@ void getWeatherjson(bool verbose) {
     debugln(F("Missing API KEY for weather data, skipping"));
     return;
   }
+  if (!sizeof(config["GeoLocation"])){
+    if(client.connect(ifconfigme,80)){
+      client.print("GET");
+      client.println("Host: ifconfig.me");
+      client.println("Connection: close");
+      client.println();
+    }else{
+    if (verbose) debugln(F("ifconfig.me unreachable"));
+      return;
+    }
+    externalIp = client.readStringUntil('\n');
+    if(client.connect(ipapi,80)){
+      client.print("GET /#"+externalIp);
+      client.println("Host: api.openweathermap.org");
+      client.println("Connection: close");
+      client.println();
+    }else {
+      if (verbose) debugln(F("ip-api unreacheable"));
+      return;
+    }
+  }
+
   //client.setTimeout(500);  //readStringUntil has a default 5 second wait
-  if (client.connect(server, 80)) {
+  if (client.connect(openweather, 80)) {
     client.print("GET /data/2.5/weather?q=" + config["GeoLocation"].as<String>() + "&appid=" + config["apiKey"].as<String>() + "&cnt=1");
     if (config["Metric"])
       client.println("&units=metric");
