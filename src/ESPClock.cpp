@@ -1271,7 +1271,13 @@ void web_server() {
             postcfg["Password"] = config["Password"];
           }
         } 
-
+      //Add Validate NTP Server
+    
+      if (postcfg["NTPServer"] != config["NTPServer"]) {
+        if (!validateNTPServer(postcfg["NTPServer"])) {
+          debugln(F("NTPServer: new server failed, keep existing server"));
+          postcfg["NTPServer"] = config["NTPServer"];
+        }
       if ((postcfg["GeoLocation"].as<String>() != "") && (postcfg["GeoLocation"].as<String>() !=config["GeoLocation"].as<String>())){
         config = postcfg;
         getGeo(true);
