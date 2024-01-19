@@ -450,11 +450,11 @@ bool connect_wifi(String n_ssid, String n_pass) {
     debug(".");
     c_cnt++;
     if (c_cnt > 50) {
-      debugln(F("WIFI: Connect Failed"));
+      debugln(F("Wifi Connect Failed"));
     }
   }
-  debugln(F("WIFI: Connect Success!"));
-  debug(F("WIFI: IP Address: "));
+  debugln(F("success!"));
+  debug(F("IP Address is: "));
   debugln(WiFi.localIP());
   valid = true;
   return valid;
@@ -462,11 +462,11 @@ bool connect_wifi(String n_ssid, String n_pass) {
 
 void setupWIFI() {
   if (!connect_wifi(config["SSID"].as<String>(), config["Password"].as<String>())) {  // Try settings in config file
-    debugln(F("WIFI: Cannot connect to anything, RESTART ESP"));
+    debugln(F("Cannot connect to anything, RESTART ESP"));
     TFDrawText(&display, String("WIFI FAILED CONFIG"), 1, 10, cc_grn);
     JsonDocument defaultconfig = DefaultConfig();
     if (!connect_wifi(defaultconfig["SSID"].as<String>(), defaultconfig["Password"].as<String>())) {  // Try settings in params.h
-      debugln(F("WIFI: Cannot connect to anything, RESTART ESP"));
+      debugln(F("Cannot connect to anything, RESTART ESP"));
       TFDrawText(&display, String("WIFI FAILED PARAMS.H"), 1, 10, cc_grn);
       resetclock();
     }
@@ -489,7 +489,7 @@ void setupmDNS(bool verbose) {
   #endif
 }
 
-bool validateNTPServer(String NTPServer){
+bool validateNTPServer(String NTPServer) {
   bool valid = false;
   timeClient.end();
   timeClient.setPoolServerName(NTPServer.c_str());
@@ -754,17 +754,17 @@ void getWeatherjson(bool verbose) {
     if (config["Metric"])
       client.println("&units=metric");
     else
-      client.println("&units=imperial");
-
-    client.println("Host: api.openweathermap.org");
-    client.println("Connection: close");
-    client.println();
-  } else {
-    if (verbose) debugln(F("OpenWeatherMap: unable to connect"));
-    return;
+      apiServer += "&units=imperial";
+  HTTPClient http;
+  http.begin(apiServer);
+  int httpResponseCode = http.GET();
+  if (httpResponseCode == 200) {
+    Weatherjson = http.getString();
+    if (verbose) debugln(Weatherjson);
   }
-  Weatherjson = client.readStringUntil('\n');
-  return;
+  else {
+    if (verbose) debugln("OpenWeatherMap: " + String(httpResponseCode) + ": " + http.getString());
+  }
   // Sample of what the weather API sends back
   //  {"coord":{"lon":-80.1757,"lat":33.0185},"weather":[{"id":741,"main":"Fog","description":"fog","icon":"50n"},
   //  {"id":500,"main":"Rain","description":"light rain","icon":"10n"}],"base":"stations","main":{"temp":55.47,
@@ -776,7 +776,7 @@ void getWeatherjson(bool verbose) {
 
 void processWeather(bool verbose) {
   String line = Weatherjson;
-  if (verbose) debugln("OpenWeatherMap: "+line);
+  //if (verbose) debugln("OpenWeatherMap: "+line);
   
   // Sample of what the weather API sends back
   //  {"coord":{"lon":-80.1757,"lat":33.0185},"weather":[{"id":741,"main":"Fog","description":"fog","icon":"50n"},
@@ -1208,7 +1208,7 @@ void set_digit_color() {
 /* #endregion */
 
 /* #region WebServer */
-//To find the values they are sandwiched between search and it always ends before "HTTP /"
+ //To find the values they are sandwiched between search and it always ends before "HTTP /"
 //Pidx + ? is length of string searching for ie "?geoloc=" = length 8, pidx + 8
 //pidx2 is end of string location for HTTP /
 void web_server() {
