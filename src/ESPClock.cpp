@@ -1259,12 +1259,19 @@ void web_server() {
         }
       }
 
-      //Check and Test new WiFi info
-      if (connect_wifi(postcfg["SSID"], postcfg["Password"]) == 1) {
-        debugln(F("Wifi Connect failed, will try prior SSID and Password"));
-        if (connect_wifi(config["SSID"], config["Password"]) == 1)
-          ESP.restart();  //Give up reboot
-      }
+           //Validate WiFi Creds
+      if ((postcfg["SSID"] != config["SSID"]) || (postcfg["Password"] != config["Password"])) {
+        if (!connect_wifi(postcfg["SSID"], postcfg["Password"])) {
+          debugln(F("Wifi Connect failed, will try prior SSID and Password"));
+          if (!connect_wifi(config["SSID"], config["Password"])) {
+            ESP.restart();  //Give up reboot
+          }
+          else {
+            postcfg["SSID"] = config["SSID"];
+            postcfg["Password"] = config["Password"];
+          }
+        } 
+
       if ((postcfg["GeoLocation"].as<String>() != "") && (postcfg["GeoLocation"].as<String>() !=config["GeoLocation"].as<String>())){
         config = postcfg;
         getGeo(true);
