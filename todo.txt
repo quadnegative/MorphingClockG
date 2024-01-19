@@ -1,15 +1,30 @@
+https://stackoverflow.com/questions/13716658/how-to-delete-all-commit-history-in-github
+https://stackoverflow.com/questions/51077976/gitignore-for-visual-studio-project-is-not-working
 --DST
-    --Double check setupTimeOffset() logic
     --?Add DST Rules to config?
     -- UTC & AZ TZ?
     --?https://worldtimeapi.org/?
---Brightness Sensor
+--Add morph_off to config
+    --ESP
+    --UI
+--Add Brightness Schedule
+    --ESP
+    --UI
+--Brightness Auto Sensor
+    --ESP
+    --UI
 
 --WEB UI
     --DST 
         -- Add Custom DT rules
         -- UTC & AZ TZ?
-    --Add Custom Color pickers
+    --Weather API
+        --https://openweathermap.org/current
+        --Lat & Long
+            --Auto
+        --City Name
+        --City ID
+        --Zip code
     --Center Spinner in modal
-    --Add Brightness Auto
     --?Add reboot button?
+    --Config preview
