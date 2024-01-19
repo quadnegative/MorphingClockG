@@ -430,7 +430,6 @@ bool connect_wifi(String n_ssid, String n_pass) {
   bool valid = false;
   int c_cnt = 0;
   debug(F("WIFI: Trying Connection :"));
-  debug(F("WIFI: Trying Connection :"));
   debugln(n_ssid);
   WiFi.hostname(config["Hostname"].as<String>());
   WiFi.mode(WIFI_STA);
@@ -442,14 +441,11 @@ bool connect_wifi(String n_ssid, String n_pass) {
     debug(".");
     c_cnt++;
     if (c_cnt > 50) {
-      debugln(F("WIFI: Connect Failed"));
-      debugln(F("WIFI: Connect Failed"));
+      debugln(F("Wifi Connect Failed"));
     }
   }
-  debugln(F("WIFI: Connect Success!"));
-  debug(F("WIFI: IP Address: "));
-  debugln(F("WIFI: Connect Success!"));
-  debug(F("WIFI: IP Address: "));
+  debugln(F("success!"));
+  debug(F("IP Address is: "));
   debugln(WiFi.localIP());
   valid = true;
   return valid;
@@ -457,13 +453,11 @@ bool connect_wifi(String n_ssid, String n_pass) {
 
 void setupWIFI() {
   if (!connect_wifi(config["SSID"].as<String>(), config["Password"].as<String>())) {  // Try settings in config file
-    debugln(F("WIFI: Cannot connect to anything, RESTART ESP"));
-    debugln(F("WIFI: Cannot connect to anything, RESTART ESP"));
+    debugln(F("Cannot connect to anything, RESTART ESP"));
     TFDrawText(&display, String("WIFI FAILED CONFIG"), 1, 10, cc_grn);
     JsonDocument defaultconfig = DefaultConfig();
     if (!connect_wifi(defaultconfig["SSID"].as<String>(), defaultconfig["Password"].as<String>())) {  // Try settings in params.h
-      debugln(F("WIFI: Cannot connect to anything, RESTART ESP"));
-      debugln(F("WIFI: Cannot connect to anything, RESTART ESP"));
+      debugln(F("Cannot connect to anything, RESTART ESP"));
       TFDrawText(&display, String("WIFI FAILED PARAMS.H"), 1, 10, cc_grn);
       resetclock();
     }
@@ -478,12 +472,10 @@ void setupmDNS(bool verbose) {
   #ifdef ESP32
   if (!MDNS.begin(config["Hostname"].as<const char*>())) {
         debugln(F("mDNS: Error setting up responder!"));
-        debugln(F("mDNS: Error setting up responder!"));
         while(1) {
             delay(1000);
         }
     }
-    debugln("mDNS: Hostname: " + config["Hostname"].as<String>());
     debugln("mDNS: Hostname: " + config["Hostname"].as<String>());
   #endif
 }
@@ -616,6 +608,32 @@ void setupNTP(bool verbose) {
   timeClient.begin();
   ntpsync = 1;
   return;
+}
+
+bool validateAPIkey(String key){
+  bool valid = false;
+  if (!sizeof(config["apiKey"])) {
+    debugln(F("OpenWeatherMap: Missing API KEY for weather data, skipping"));
+    return;
+  }
+  const char apiServer[] = "https://api.openweathermap.org/data/2.5/weather?lat=41.4902&lon=-91.5754&appid=";
+  HTTPClient http;
+  http.begin(apiServer+key);
+  int httpResponseCode = http.GET();
+  if (httpResponseCode == 200) {
+    valid = true;
+  } 
+  else if (httpResponseCode == 401) {
+    debugln(F("OpenWeatherMap: Invalid API key"));
+  }
+  else if (httpResponseCode == 429) {
+    debugln(F("OpenWeatherMap: Exceeded API call limit"));
+  }
+  else {
+    debugln(F("OpenWeatherMap: bad response"));
+  }
+  http.end();
+  return valid;
 }
 
 bool validateAPIkey(String key){
