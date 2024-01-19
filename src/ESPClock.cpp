@@ -480,17 +480,7 @@ void setupmDNS(bool verbose) {
   #endif
 }
 
-bool validateNTPServer(String NTPServer){
-  bool valid = false;
-  timeClient.end();
-  timeClient.setPoolServerName(NTPServer.c_str());
-  timeClient.begin();
-  if(timeClient.forceUpdate()) valid = true;
-  else debugln("NTPServer: could not connect to " + NTPServer);
-  return valid;
-}
-
-bool validateNTPServer(String NTPServer){
+bool validateNTPServer(String NTPServer) {
   bool valid = false;
   timeClient.end();
   timeClient.setPoolServerName(NTPServer.c_str());
@@ -614,33 +604,7 @@ bool validateAPIkey(String key){
   bool valid = false;
   if (!sizeof(config["apiKey"])) {
     debugln(F("OpenWeatherMap: Missing API KEY for weather data, skipping"));
-    return;
-  }
-  const char apiServer[] = "https://api.openweathermap.org/data/2.5/weather?lat=41.4902&lon=-91.5754&appid=";
-  HTTPClient http;
-  http.begin(apiServer+key);
-  int httpResponseCode = http.GET();
-  if (httpResponseCode == 200) {
-    valid = true;
-  } 
-  else if (httpResponseCode == 401) {
-    debugln(F("OpenWeatherMap: Invalid API key"));
-  }
-  else if (httpResponseCode == 429) {
-    debugln(F("OpenWeatherMap: Exceeded API call limit"));
-  }
-  else {
-    debugln(F("OpenWeatherMap: bad response"));
-  }
-  http.end();
-  return valid;
-}
-
-bool validateAPIkey(String key){
-  bool valid = false;
-  if (!sizeof(config["apiKey"])) {
-    debugln(F("OpenWeatherMap: Missing API KEY for weather data, skipping"));
-    return;
+    return valid;
   }
   const char apiServer[] = "https://api.openweathermap.org/data/2.5/weather?lat=41.4902&lon=-91.5754&appid=";
   HTTPClient http;
@@ -667,22 +631,21 @@ void getWeatherjson(bool verbose) {
     debugln(F("OpenWeatherMap: Missing API KEY for weather data, skipping"));
     return;
   }
-  if (client.connect(server, 80)) {
-    client.print("GET /data/2.5/weather?q=" + config["GeoLocation"].as<String>() + "&appid=" + config["apiKey"].as<String>() + "&cnt=1");
-    if (config["Metric"])
-      client.println("&units=metric");
+  String apiServer = "https://api.openweathermap.org/data/2.5/weather?q=" + config["GeoLocation"].as<String>() + "&appid=" + config["apiKey"].as<String>() + "&cnt=1";
+  if (config["Metric"])
+      apiServer += "&units=metric";
     else
-      client.println("&units=imperial");
-
-    client.println("Host: api.openweathermap.org");
-    client.println("Connection: close");
-    client.println();
-  } else {
-    if (verbose) debugln(F("OpenWeatherMap: unable to connect"));
-    return;
+      apiServer += "&units=imperial";
+  HTTPClient http;
+  http.begin(apiServer);
+  int httpResponseCode = http.GET();
+  if (httpResponseCode == 200) {
+    Weatherjson = http.getString();
+    if (verbose) debugln(Weatherjson);
   }
-  Weatherjson = client.readStringUntil('\n');
-  return;
+  else {
+    if (verbose) debugln("OpenWeatherMap: " + String(httpResponseCode) + ": " + http.getString());
+  }
   // Sample of what the weather API sends back
   //  {"coord":{"lon":-80.1757,"lat":33.0185},"weather":[{"id":741,"main":"Fog","description":"fog","icon":"50n"},
   //  {"id":500,"main":"Rain","description":"light rain","icon":"10n"}],"base":"stations","main":{"temp":55.47,
@@ -694,7 +657,7 @@ void getWeatherjson(bool verbose) {
 
 void processWeather(bool verbose) {
   String line = Weatherjson;
-  if (verbose) debugln("OpenWeatherMap: "+line);
+  //if (verbose) debugln("OpenWeatherMap: "+line);
   
   // Sample of what the weather API sends back
   //  {"coord":{"lon":-80.1757,"lat":33.0185},"weather":[{"id":741,"main":"Fog","description":"fog","icon":"50n"},
