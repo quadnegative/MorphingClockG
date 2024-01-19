@@ -157,7 +157,7 @@ int cc_wtext;
 
 //===OTHER SETTINGS===
 int ani_speed = 500;      // sets animation speed
-int weather_refresh = 2;  // sets weather refresh interval in minutes; must be between 1 and 59
+int weather_refresh = 5;  // sets weather refresh interval in minutes; must be between 1 and 59
 int morph_off = 0;        // display issue due to weather check
 
 //=== POSITION ===
