@@ -306,7 +306,7 @@ void display_updater() {
       x = 70;
     // Increment the counter and set the time of ISR
     //portENTER_CRITICAL_ISR(&timerMux);
-    display.display(1);
+    display.display(x);
     //delayMicroseconds(0);
     //portEXIT_CRITICAL_ISR(&timerMux);
   }
