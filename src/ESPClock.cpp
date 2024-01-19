@@ -1251,6 +1251,14 @@ void web_server() {
 
       JsonDocument postcfg = deserializeConfig(body);
 
+      //Validate API Key
+      if (postcfg["apiKey"] != config["apiKey"]) {
+        if (!validateAPIkey(postcfg["apiKey"].as<String>())) {
+          debugln(F("OpenWeatherMap: new key failed, keep existing key"));
+          postcfg["apiKey"] = config["apiKey"];
+        }
+      }
+
       //Check and Test new WiFi info
       if (connect_wifi(postcfg["SSID"], postcfg["Password"]) == 1) {
         debugln(F("Wifi Connect failed, will try prior SSID and Password"));
