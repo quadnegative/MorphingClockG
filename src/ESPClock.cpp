@@ -15,7 +15,7 @@
 #include "WeatherIcons.h"
 #include <Timezone.h>
 #include <TimezoneRules.h>
-#include <web.h>
+#include <html.h>
 
 #define DEBUG 1
 #define debug(...) \
@@ -1205,11 +1205,29 @@ void web_server() {
     }
     //Get /morph.js
     else if ((pidx = httprq.indexOf("GET /morph.js")) != -1) {
-      morphJS2(httpcli);
+      httpcli.println(F("HTTP/1.1 200 OK"));
+      httpcli.println(F("Content-Type: text/javascript"));
+      httpcli.println(F("Access-Control-Allow-Origin: *"));
+      httpcli.println(F("Connection: close"));  // the connection will be closed after completion of the response
+      httpcli.println(F(""));
+      httpcli.println(script_js);
+      // give the web browser time to receive the data
+      delay(1);
+      // close the connection:
+      httpcli.stop();
     }
     //Get index
     else {
-      index2(httpcli);
+      httpcli.println(F("HTTP/1.1 200 OK"));
+      httpcli.println(F("Content-type: text/html"));
+      httpcli.println(F("Access-Control-Allow-Origin: *"));
+      httpcli.println(F("Connection: close"));  // the connection will be closed after completion of the response
+      httpcli.println(F(""));
+      httpcli.println(index_html);
+      // give the web browser time to receive the data
+      delay(1);
+      // close the connection:
+      httpcli.stop();
     }
   }
 }
