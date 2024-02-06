@@ -8,7 +8,8 @@
 #define TINYICONS_H
 
 #include <Arduino.h>
-#include <PxMatrix.h> // https://github.com/2dom/PxMatrix
+//#include <PxMatrix.h> // https://github.com/2dom/PxMatrix
+#include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 
 /*
  * icons set
@@ -317,7 +318,7 @@ void loop()
 *
 */
 
-void DrawIcon (PxMATRIX* d, int *ico, char xo, char yo, int cols, int rows);
-
+//void DrawIcon (PxMATRIX* d, int *ico, char xo, char yo, int cols, int rows);
+void DrawIconDMA (MatrixPanel_I2S_DMA* d, int *ico, char xo, char yo, int cols, int rows);
 #endif
 

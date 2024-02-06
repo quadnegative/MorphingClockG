@@ -7,7 +7,8 @@
 #define TINYFONT_H
 
 #include <Arduino.h>
-#include <PxMatrix.h> // https://github.com/2dom/PxMatrix
+//#include <PxMatrix.h> // https://github.com/2dom/PxMatrix
+#include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 
 #define TF_COLS 4
 #define TF_ROWS 5
@@ -24,7 +25,8 @@ struct TFFace
   xo += 5; TFDrawChar (&display, 'V', xo, yo, cc); cc = random (25, 65535);
   xo += 5; TFDrawChar (&display, 'E', xo, yo, cc); cc = random (25, 65535);
  */
-void TFDrawChar (PxMATRIX* d, char value, char xo, char yo, int col);
+//void TFDrawChar (PxMATRIX* d, char value, char xo, char yo, int col);
+void TFDrawCharDMA (MatrixPanel_I2S_DMA *d, char value, int xo, int yo, int col);
 
 /*
  * example:
@@ -33,7 +35,10 @@ void TFDrawChar (PxMATRIX* d, char value, char xo, char yo, int col);
   xo = 1; yo = 1;
   TFDrawText (&display, lstr, xo, yo, cc_red);
  */
-void TFDrawText (PxMATRIX* d, String text, char xo, char yo, int col);
+//void TFDrawText (PxMATRIX* d, String text, char xo, char yo, int col);
+void TFDrawTextDMA (MatrixPanel_I2S_DMA *d, String text, int xo, int yo, int col);
+
+void TFScrollTextDMA(MatrixPanel_I2S_DMA *d, String text, int xo, int yo, int window_length, int col);
 
 #endif
 

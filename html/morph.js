@@ -22,6 +22,11 @@ function hexToRgb(hex) {
     } : null;
 }
 
+function hideGeoLocElems() {
+    $('input[name="Location"]:checked:enabled').parent().parent().find('input[class=form-control][id^=Geo]').hide()
+    $('#BrowserLocation').hide()
+}
+
 function loadConfig() {
     configLoading = true;
     $('#modalLabel')[0].innerText = 'Loading';
@@ -73,11 +78,42 @@ function loadConfig() {
                 }
             }
             if (configJSON.apiKey) $("#apiKey")[0].value=configJSON.apiKey;
-            if (configJSON.GeoLocation) $("#GeoLocation")[0].value=configJSON.GeoLocation;
-            if (configJSON.SSID) $("#SSID")[0].value=configJSON.SSID;
-            if (configJSON.Password) $("#Password")[0].value=configJSON.Password;
-            if (configJSON.NTPServer) $("#NTPServer")[0].value=configJSON.NTPServer;
-            if (configJSON.Hostname) $("#Hostname")[0].value=configJSON.Hostname;
+            if (configJSON.GeoLocation) {
+                if (configJSON.GeoLocation == "Auto") {
+                    $('#GeoAuto')[0].checked = true
+                    hideGeoLocElems();
+                }
+                else if ((configJSON.GeoLocation).includes("lat=")) {
+                    $('#GeoCoordinates')[0].checked = true
+                    hideGeoLocElems();
+                    $('#GeoLocLatText').show();
+                    $('#GeoLocLonText').show();
+                    $("#GeoLocLatText")[0].value = (configJSON.GeoLocation.split('&')[0]).split('=')[1];
+                    $("#GeoLocLonText")[0].value = (configJSON.GeoLocation.split('&')[1]).split('=')[1];
+                }
+                else if ((configJSON.GeoLocation).includes("id=")) {
+                    $('#GeoCityID')[0].checked = true
+                    hideGeoLocElems();
+                    $('#GeoCityIDText').show();
+                    $("#GeoCityIDText")[0].value = configJSON.GeoLocation.replace("id=", "");
+                }
+                else if ((configJSON.GeoLocation).includes("zip=")) {
+                    $('#GeoZIPCode')[0].checked = true
+                    hideGeoLocElems();
+                    $('#GeoZIPCodeText').show();
+                    $("#GeoZIPCodeText")[0].value = configJSON.GeoLocation.replace("zip=", "");
+                }
+                else {
+                    $('#GeoCityStateCountry')[0].checked = true
+                    hideGeoLocElems();
+                    $('#GeoCityStateCountryText').show();
+                    $("#GeoCityStateCountryText")[0].value  = configJSON.GeoLocation.replace("q=", "");
+                }
+            }
+            if (configJSON.SSID) $("#SSID")[0].value = configJSON.SSID;
+            if (configJSON.Password) $("#Password")[0].value = configJSON.Password;
+            if (configJSON.NTPServer) $("#NTPServer")[0].value = configJSON.NTPServer;
+            if (configJSON.Hostname) $("#Hostname")[0].value = configJSON.Hostname;
             $("#ConfigJSON")[0].innerText=JSON.stringify(configJSON, null, 4);
         }
     })
@@ -97,7 +133,7 @@ function updateConfigJSON(event) {
         if ($('input[name="TimeZone"]:checked:enabled')[0]) {
             if ($('input[name="TimeZone"]:checked:enabled')[0].id == "CustomTZ") {
                 $('#CustomTZOffset').show();
-                configJSON.TimeZone = $('input[id="CustomTZOffset"]')[0].value;
+                configJSON.TimeZone = ($('input[id="CustomTZOffset"]')[0].value).replace(" ","");
             }
             else {
                 $('#CustomTZOffset').hide();
@@ -151,18 +187,45 @@ function updateConfigJSON(event) {
                 else $('#Brightness')[0].value = 42;
             }
             else if (event.target.id == "Brightness") {
-                //save to copnfig
+                //save to config
                 configJSON.Brightness = $('#Brightness')[0].value
                 configJSON.BrightnessValue = $('#Brightness')[0].value
                 $('label[for="BrightnessManual"]')[0].innerText = "Manual: " + $('#Brightness')[0].value
             }
         }
-        configJSON.apiKey = $('input[id="apiKey"]')[0].value;
-        configJSON.GeoLocation = $('input[id="GeoLocation"]')[0].value;
-        configJSON.SSID = $('input[id="SSID"]')[0].value;
-        configJSON.Password = $('input[id="Password"]')[0].value;
-        configJSON.NTPServer = $('input[id="NTPServer"]')[0].value;
-        configJSON.Hostname = ($('input[id="Hostname"]')[0].value).toLowerCase();
+        configJSON.apiKey = ($('input[id="apiKey"]')[0].value).replace(" ","").trim();
+        if ($('input[name="Location"]:checked:enabled')[0]) {
+            if ($('input[name="Location"]:checked:enabled')[0].id == "GeoAuto") {
+                hideGeoLocElems();
+                configJSON.GeoLocation = "Auto";
+            }
+            if ($('input[name="Location"]:checked:enabled')[0].id == "GeoCoordinates") {
+                hideGeoLocElems();
+                $('#BrowserLocation').show()
+                $('#GeoLocLatText').show();
+                $('#GeoLocLonText').show();
+                configJSON.GeoLocation = ("lat=" + $('input[id="GeoLocLatText"]')[0].value.trim() + "&lon=" + $('input[id="GeoLocLonText"]')[0].value.trim()).replace(" ","");
+            }
+            if ($('input[name="Location"]:checked:enabled')[0].id == "GeoCityStateCountry") {
+                hideGeoLocElems();
+                $('#GeoCityStateCountryText').show();
+                configJSON.GeoLocation = ("q=" + $('input[id="GeoCityStateCountryText"]')[0].value.trim());
+            }
+            if ($('input[name="Location"]:checked:enabled')[0].id == "GeoCityID") {
+                hideGeoLocElems();
+                $('#GeoCityIDText').show();
+                configJSON.GeoLocation = ("id=" + $('input[id="GeoCityIDText"]')[0].value.trim()).replace(" ","");
+            }
+            if ($('input[name="Location"]:checked:enabled')[0].id == "GeoZIPCode") {
+                hideGeoLocElems();
+                $('#GeoZIPCodeText').show();
+                configJSON.GeoLocation = ("zip=" + $('input[id="GeoZIPCodeText"]')[0].value.trim()).replace(" ","");
+            }
+        }
+        configJSON.SSID = ($('input[id="SSID"]')[0].value.trim()).replace(" ","");
+        configJSON.Password = ($('input[id="Password"]')[0].value.trim()).replace(" ","");
+        configJSON.NTPServer = ($('input[id="NTPServer"]')[0].value.trim()).replace(" ","");
+        configJSON.Hostname = (($('input[id="Hostname"]')[0].value.trim()).toLowerCase()).replace(" ","");
         configJSON.DateFormat = "M.D.Y";
         $('#ConfigJSON')[0].innerText=JSON.stringify(configJSON, null, 4);
     }
@@ -226,7 +289,8 @@ function resetModal() {
 
 $(window).on('load', function(){
     loadConfig();
-}); 
+});
+
 $('#Brightness').on('mousemove', function(e) {
     $('label[for="BrightnessManual"]')[0].innerText = "Manual: " + $(this).val()
 });

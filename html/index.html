@@ -243,7 +243,7 @@
                       Manual
                   </label>
                 </div>
-                <input type="range" class="form-range" id="Brightness" data-bs-toggle="tooltip" data-bs-placement="top" title="Tooltip on top" onchange="updateConfigJSON(event)">
+                <input type="range" class="form-range" id="Brightness" step="5" data-bs-toggle="tooltip" data-bs-placement="top" title="Tooltip on top" onchange="updateConfigJSON(event)">
               </div>
           </div>
         </div>
@@ -254,11 +254,45 @@
               <div class="card">
                   <div class="card-body">
                       <h5 class="card-title">Open Weather Map</h5>
-                      <p class="card-text"><a href="https://www.openweathermap.org" target="_blank">openweathermap.org</a></p>
+                      <p class="card-text"><a href="https://www.openweathermap.org" target="_blank">openweathermap.org</a><br><a href="https://openweathermap.org/current" target="_blank">OpenWeatherMap API</a></p>
                       <label for="apiKey" class="form-label">API key</label>
                       <input type="text" class="form-control" id="apiKey" placeholder="API key" onchange="updateConfigJSON(event)">
-                      <label for="GeoLocation" class="form-label">Geo Location: City,State,Country</label>
-                      <input type="text" class="form-control" id="GeoLocation" placeholder="City,State,Country" onchange="updateConfigJSON(event)">
+                      <label for="apiKey" class="form-label">Location:</label>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="Location" id="GeoAuto" onchange="updateConfigJSON(event)">
+                        <label class="form-check-label" for="GeoAuto">
+                          Auto
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="Location" id="GeoCoordinates" onchange="updateConfigJSON(event)">
+                        <label class="form-check-label" for="GeoCoordinates">
+                          Geo Coordinates
+                        </label>
+                        <input type="text" class="form-control" id="GeoLocLatText" placeholder="Latitude" onchange="updateConfigJSON(event)">
+                        <input type="text" class="form-control" id="GeoLocLonText" placeholder="Longitude" onchange="updateConfigJSON(event)">
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="Location" id="GeoCityStateCountry" onchange="updateConfigJSON(event)">
+                        <label class="form-check-label" for="GeoCityStateCountry">
+                          City,State,Country
+                        </label>
+                        <input type="text" class="form-control" id="GeoCityStateCountryText" placeholder="City,State,Country" onchange="updateConfigJSON(event)">
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="Location" id="GeoCityID" onchange="updateConfigJSON(event)">
+                        <label class="form-check-label" for="GeoCityID">
+                          City ID
+                        </label>
+                        <input type="text" class="form-control" id="GeoCityIDText" placeholder="City ID" onchange="updateConfigJSON(event)">
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="Location" id="GeoZIPCode" onchange="updateConfigJSON(event)">
+                        <label class="form-check-label" for="GeoZIPCode">
+                          ZIP Code
+                        </label>
+                        <input type="text" class="form-control" id="GeoZIPCodeText" placeholder="Zip,US" onchange="updateConfigJSON(event)">
+                      </div>
                   </div>
               </div>
           </div>
@@ -291,9 +325,9 @@
       <!--Row 3-->
       <div class="row">
           <div class="col-md-12">
-            <button type="button" class="btn btn-primary mr-1" onclick="saveConfig()">Save</button>
-            <button type="button" class="btn btn-info mr-1" onclick="$('#collapseConfig').collapse('toggle');$('#collapseConfig').on('shown.bs.collapse', function () {this.scrollIntoView();});">Show Config</button>  
-            <button type="button" class="btn btn-danger" onclick="resetModal()">Reset Config</button>
+            <button type="button" class="btn btn-primary mt-1 mr-1" onclick="saveConfig()">Save</button>
+            <button type="button" class="btn btn-info mt-1 mr-1" onclick="$('#collapseConfig').collapse('toggle');$('#collapseConfig').on('shown.bs.collapse', function () {this.scrollIntoView();});">Show Config</button>  
+            <button type="button" class="btn btn-danger mt-1" onclick="resetModal()">Reset Config</button>
           </div>
       </div>
       <!--Row 4-->

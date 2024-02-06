@@ -1,0 +1,41 @@
+#include <Arduino.h>
+#include <ArduinoJson.h>
+
+JsonDocument DefaultConfig() {
+    JsonDocument DefaultConfig;
+
+    //open weather map api key 
+    //To Get your API Key - https://openweathermap.org/
+    DefaultConfig["apiKey"] = ""; //e.g a hex string like "abcdef0123456789abcdef0123456789"
+    DefaultConfig["GeoLocation"] = "Auto"; //"Auto", e.g. "Miami,FL,US" //the city you want the weather for 
+    DefaultConfig["TimeZone"] = "EST"; // "-5", "EST", "CST", "MST", "PST", "AST", "HAST"
+    DefaultConfig["DST"] = true;
+    DefaultConfig["Military"] = false;
+    DefaultConfig["Metric"] = false;
+    DefaultConfig["WeatherAnimation"] = false;
+    DefaultConfig["ColorPalette"] = "0";
+    DefaultConfig["Brightness"] = "42";
+    DefaultConfig["SSID"] = ""; //wifi network
+    DefaultConfig["Password"] = ""; //wifi password
+    DefaultConfig["Hostname"] = "MorphClockG"; //wifi password
+    DefaultConfig["NTPServer"] = "time.google.com"; //"pool.ntp.org";
+    DefaultConfig["DateFormat"] = "M.D.Y"; // date format: D.M.Y or M.D.Y or M.D or D.M or D/M/Y.. looking for trouble
+    return DefaultConfig;
+}
+
+//Default HUB75 Pins - Change as needed
+int8_t R1_PIN = 25;
+int8_t G1_PIN = 26;
+int8_t B1_PIN = 27;
+int8_t R2_PIN = 14;
+int8_t G2_PIN = 12;
+int8_t B2_PIN = 13;
+
+int8_t A_PIN = 23;
+int8_t B_PIN = 19;
+int8_t C_PIN = 5;
+int8_t D_PIN = 17;
+int8_t E_PIN = 32;
+int8_t LAT_PIN = 4;
+int8_t OE_PIN = 15;
+int8_t CLK_PIN = 16;
