@@ -7,21 +7,19 @@ const byte sD = 3;
 const byte sE = 4;
 const byte sF = 5;
 const byte sG = 6;
-const int segHeight = 6;
-const int segWidth = segHeight;
 const uint16_t height = 31;
 const uint16_t width = 63;
 
 byte digitBits[] = {
-  B11111100, // 0 ABCDEF--
-  B01100000, // 1 -BC-----
-  B11011010, // 2 AB-DE-G-
-  B11110010, // 3 ABCD--G-
-  B01100110, // 4 -BC--FG-
-  B10110110, // 5 A-CD-FG-
-  B10111110, // 6 A-CDEFG-
-  B11100000, // 7 ABC-----
-  B11111110, // 8 ABCDEFG-
+  B11111100, // 0 ABCDEF-- //   AAA
+  B01100000, // 1 -BC----- //  F   B
+  B11011010, // 2 AB-DE-G- //  F   B
+  B11110010, // 3 ABCD--G- //  F   B
+  B01100110, // 4 -BC--FG- //   GGG
+  B10110110, // 5 A-CD-FG- //  E   C
+  B10111110, // 6 A-CDEFG- //  E   C
+  B11100000, // 7 ABC----- //  E   C
+  B11111110, // 8 ABCDEFG- //   DDD
   B11110110, // 9 ABCD_FG-
 };
 
@@ -37,30 +35,32 @@ byte digitBits[] = {
 
 uint16_t black;
 
-Digit::Digit(PxMATRIX* d, byte value, uint16_t xo, uint16_t yo, uint16_t color) {
-  _display = d;
+Digit::Digit(byte value, uint16_t xo, uint16_t yo, uint16_t seg_width, uint16_t seg_length, uint16_t color) {
   _value = value;
   xOffset = xo;
   yOffset = yo;
+  segWidth = seg_width;
+  segHeight = seg_length;
   _color = color;
 }
 
 byte Digit::Value() {
   return _value;
 }
+
 void Digit::drawPixel(uint16_t x, uint16_t y, uint16_t c)
 {
-  _display->drawPixel(xOffset + x, height - (y + yOffset), c);
+  dma_display->drawPixel(xOffset + x, height - (y + yOffset), c);
 }
 
 void Digit::drawLine(uint16_t x, uint16_t y, uint16_t x2, uint16_t y2, uint16_t c)
 {
-  _display->drawLine(xOffset + x, height - (y + yOffset), xOffset + x2, height - (y2 + yOffset), c);
+  dma_display->drawLine(xOffset + x, height - (y + yOffset), xOffset + x2, height - (y2 + yOffset), c);
 }
 
 void Digit::drawFillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t c)
 {
-  _display->fillRect(xOffset + x, height - (y + yOffset), w,h, c);
+  dma_display->fillRect(xOffset + x, height - (y + yOffset), w,h, c);
 }
 
 void Digit::SetColor(uint16_t c)
@@ -68,12 +68,11 @@ void Digit::SetColor(uint16_t c)
   _color = c;
 }
 
-
 void Digit::DrawColon(uint16_t c)
 {
   // Colon is drawn to the left of this digit
-  drawFillRect(-3, segHeight-1, 2,2, c);
-  drawFillRect(-3, segHeight+1+3, 2,2, c);
+  drawFillRect(-3, segHeight-2, 2,2, c);
+  drawFillRect(-3, segHeight+2+3, 2,2, c);
 }
 
 void Digit::drawSeg(byte seg)
