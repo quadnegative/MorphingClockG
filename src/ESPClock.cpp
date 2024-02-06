@@ -1,21 +1,21 @@
-#include "params.h"
 //#include <FS.h>
-#include "LittleFS.h"
+#include <LittleFS.h>
 #include <WiFiManager.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <PxMatrix.h>
+#include <Timezone.h>
 //#include <TimeLib.h>
+#include "params.h"
 #include "TinyFont.h"
 #include "Digit.h"
 #include "Digitsec.h"
 #include "TinyIcons.h"
 #include "WeatherIcons.h"
-#include <Timezone.h>
-#include <TimezoneRules.h>
-#include <html.h>
+#include "TimezoneRules.h"
+#include "html.h"
 
 #define DEBUG 1
 #define debug(...) \
@@ -492,98 +492,118 @@ bool validateNTPServer(String NTPServer) {
 
 int setupTimeOffset(bool verbose) {
   int tzOffSet = 0;
-  if ((config["DST"]))
-  {
-    if (config["TimeZone"] == "EST") {
-      if (usET.utcIsDST(now()))
-      {
-        tzOffSet = (usEDT.offset)/60;
-        if (verbose) debug(F("EDT:"));
-        if (verbose) debugln(tzOffSet);
-      }
-      else
-      {
-        tzOffSet = (usEST.offset)/60;
-        if (verbose) debug(F("EST:"));
-        if (verbose) debugln(tzOffSet);
-      }
+  if (config["TimeZone"] == "EST") {
+    if (config["DST"] && usET.utcIsDST(now()))
+    {
+      tzOffSet = (usEDT.offset)/60;
+      if (verbose) debug(F("EDT:"));
+      if (verbose) debugln(tzOffSet);
     }
-    else if (config["TimeZone"] == "CST") {
-      if (usCT.utcIsDST(now()))
-      {
-        tzOffSet = (usCDT.offset)/60;
-        if (verbose) debug(F("CDT:"));
-        if (verbose) debugln(tzOffSet);
-      }
-      else
-      {
-        tzOffSet = (usCST.offset)/60;
-        if (verbose) debug(F("CST:"));
-        if (verbose) debugln(tzOffSet);
-      }
+    else
+    {
+      tzOffSet = (usEST.offset)/60;
+      if (verbose) debug(F("EST:"));
+      if (verbose) debugln(tzOffSet);
     }
-    else if (config["TimeZone"] == "MST") {
-      if (usMT.utcIsDST(now()))
-      {
-        tzOffSet = (usMDT.offset)/60;
-        if (verbose) debug(F("MDT:"));
-        if (verbose) debugln(tzOffSet);
-      }
-      else
-      {
-        tzOffSet = (usMST.offset)/60;
-        if (verbose) debug(F("MST:"));
-        if (verbose) debugln(tzOffSet);
-      }
+    return tzOffSet;
+  }
+  else if (config["TimeZone"] == "CST") {
+    if (config["DST"] && usCT.utcIsDST(now()))
+    {
+      tzOffSet = (usCDT.offset)/60;
+      if (verbose) debug(F("CDT:"));
+      if (verbose) debugln(tzOffSet);
     }
-    else if (config["TimeZone"] == "PST") {
-      if (usPT.utcIsDST(now()))
-      {
-        tzOffSet = (usPDT.offset)/60;
-        if (verbose) debug(F("PDT:"));
-        if (verbose) debugln(tzOffSet);
-      }
-      else
-      {
-        tzOffSet = (usPST.offset)/60;
-        if (verbose) debug(F("PST:"));
-        if (verbose) debugln(tzOffSet);
-      }
+    else
+    {
+      tzOffSet = (usCST.offset)/60;
+      if (verbose) debug(F("CST:"));
+      if (verbose) debugln(tzOffSet);
     }
-    else if (config["TimeZone"] == "AST") {
-      if (usAT.utcIsDST(now()))
-      {
-        tzOffSet = (usADT.offset)/60;
-        if (verbose) debug(F("ADT:"));
-        if (verbose) debugln(tzOffSet);
-      }
-      else
-      {
-        tzOffSet = (usAST.offset)/60;
-        if (verbose) debug(F("AST:"));
-        if (verbose) debugln(tzOffSet);
-      }
+    return tzOffSet;
+  }
+  else if (config["TimeZone"] == "CST") {
+    if (config["DST"] && usCT.utcIsDST(now()))
+    {
+      tzOffSet = (usCDT.offset)/60;
+      if (verbose) debug(F("CDT:"));
+      if (verbose) debugln(tzOffSet);
     }
-    else if (config["TimeZone"] == "HAST") {
-      if (usHAT.utcIsDST(now()))
-      {
-        tzOffSet = (usHADT.offset)/60;
-        if (verbose) debug(F("HADT:"));
-        if (verbose) debugln(tzOffSet);
-      }
-      else
-      {
-        tzOffSet = (usHAST.offset)/60;
-        if (verbose) debug(F("HAST:"));
-        if (verbose) debugln(tzOffSet);
-      }
+    else
+    {
+      tzOffSet = (usCST.offset)/60;
+      if (verbose) debug(F("CST:"));
+      if (verbose) debugln(tzOffSet);
     }
-    else if (config["TimeZone"] == "CustomST") {
-      //Future CustomST Rules from web UI
+    return tzOffSet;
+  }
+  else if (config["TimeZone"] == "MST") {
+    if (config["DST"] && usMT.utcIsDST(now()))
+    {
+      tzOffSet = (usMDT.offset)/60;
+      if (verbose) debug(F("MDT:"));
+      if (verbose) debugln(tzOffSet);
     }
+    else
+    {
+      tzOffSet = (usMST.offset)/60;
+      if (verbose) debug(F("MST:"));
+      if (verbose) debugln(tzOffSet);
+    }
+    return tzOffSet;
+  }
+  else if (config["TimeZone"] == "PST") {
+    if (config["DST"] && usPT.utcIsDST(now()))
+    {
+      tzOffSet = (usPDT.offset)/60;
+      if (verbose) debug(F("PDT:"));
+      if (verbose) debugln(tzOffSet);
+    }
+    else
+    {
+      tzOffSet = (usPST.offset)/60;
+      if (verbose) debug(F("PST:"));
+      if (verbose) debugln(tzOffSet);
+    }
+    return tzOffSet;
+  }
+  else if (config["TimeZone"] == "AST") {
+    if (config["DST"] && usAT.utcIsDST(now()))
+    {
+      tzOffSet = (usADT.offset)/60;
+      if (verbose) debug(F("ADT:"));
+      if (verbose) debugln(tzOffSet);
+    }
+    else
+    {
+      tzOffSet = (usAST.offset)/60;
+      if (verbose) debug(F("AST:"));
+      if (verbose) debugln(tzOffSet);
+    }
+    return tzOffSet;
+  }
+  else if (config["TimeZone"] == "HAST") {
+    if (config["DST"] && usHAT.utcIsDST(now()))
+    {
+      tzOffSet = (usHADT.offset)/60;
+      if (verbose) debug(F("HADT:"));
+      if (verbose) debugln(tzOffSet);
+    }
+    else
+    {
+      tzOffSet = (usHAST.offset)/60;
+      if (verbose) debug(F("HAST:"));
+      if (verbose) debugln(tzOffSet);
+    }
+    return tzOffSet;
+  }
+  else if (config["TimeZone"] == "CustomST") {
+    //Future CustomST Rules from web UI
+    return tzOffSet;
   }
   else {
     tzOffSet = atoi(config["TimeZone"]);
+    return tzOffSet;
   }
   return tzOffSet;
 }
@@ -962,7 +982,6 @@ void draw_date() {
   long tnow = timeClient.getEpochTime();
   String lstr = "";
 
-  //sval = doc["wind"]["deg"].as<String>();
   for (int i = 0; i < 5; i += 2) {
     switch (config["DateFormat"].as<String>()[i]) {
       case 'D':
@@ -1262,6 +1281,9 @@ void setup() {
   TFDrawText(&display, String("  MORPH CLOCK  "), 0, 1, cc_blu);
   TFDrawText(&display, String("  STARTING UP  "), 0, 10, cc_blu);
 
+  TFDrawText(&display, String("  MORPH CLOCK  "), 0, 1, cc_blu);
+  TFDrawText(&display, String("  STARTING UP  "), 0, 10, cc_blu);
+
   String lstr = String("  TIMEZONE:") + config["TimeZone"].as<String>();
   TFDrawText(&display, lstr, 0, 24, cc_cyan);
 
@@ -1390,7 +1412,8 @@ void loop() {
       if (ss == 31 && ((mm % weather_refresh) == 0)) {
         processWeather(false);
         //morph_off = 0;  //Currently not using, set to 0 this was to address weather delay
-      } else if ((ss % 10) == 0) {  // Toggle display every 10 seconds between wind and humidity
+      } 
+      else if ((ss % 10) == 0) {  // Toggle display every 10 seconds between wind and humidity
         if (wind_humi == 1) {
           TFDrawText(&display, humi_lstr, wind_x, wind_y, cc_wind);
           wind_humi = 0;

@@ -14,20 +14,12 @@
 
 void DrawIcon (PxMATRIX* d, int *ico, char xo, char yo, int cols, int rows)
 {
-  debug_print (F("draw icon "));
-  debug_print (cols);
-  debug_print (" x ");
-  debug_print (rows);
-  debug_print (F(": "));
   int i, j;
   for (i = 0; i < rows; i++)
   {
     for (j = 0; j < cols; j++)
     {
       d->drawPixel (xo + j, yo + i, ico[i * cols + j]);
-      debug_print (ico[i * cols + j]);
-      debug_print (", ");
     }
   }
-  debug_println ();
 }
