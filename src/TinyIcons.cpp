@@ -5,15 +5,8 @@
  */
 #include "TinyIcons.h"
 
-
-#define DEBUG 1
-#define debug_println(...) \
-            do { if (DEBUG) Serial.println(__VA_ARGS__); } while (0)
-#define debug_print(...) \
-            do { if (DEBUG) Serial.print(__VA_ARGS__); } while (0)
-
-void DrawIcon (PxMATRIX* d, int *ico, char xo, char yo, int cols, int rows)
-{
+//void DrawIcon (PxMATRIX* d, int *ico, char xo, char yo, int cols, int rows)
+void DrawIconDMA (MatrixPanel_I2S_DMA* d, int *ico, char xo, char yo, int cols, int rows) {
   int i, j;
   for (i = 0; i < rows; i++)
   {

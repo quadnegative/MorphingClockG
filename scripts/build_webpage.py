@@ -4,6 +4,10 @@
 # sudo npm install clean-css-cli -g
 # sudo npm install uglify-js -g
 
+#update to use python
+#Add gzip
+  #https://github.com/TheNitek/RfidShelf/blob/f6f4f1801369f44d4bf6c45717b039ca7e2b52ba/RfidShelf/platformio_script.py
+
 import os
 
 Import("env", "projenv")
@@ -52,7 +56,7 @@ def generateHtml(debug):
           cpp_output += stream.read()
         cpp_output += ")***\";\n\n"
 
-        f = open ("./src/html.h", "w")
+        f = open ("./include/html.h", "w")
         f.write(cpp_output)
         f.close()
         print("==========================\n")

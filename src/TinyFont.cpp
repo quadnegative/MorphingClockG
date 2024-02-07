@@ -3,13 +3,8 @@
  * 
  * provided 'AS IS', use it at your own risk
  */
+#include "Config.h"
 #include "TinyFont.h"
-
-#define DEBUG 1
-#define debug(...) \
-            do { if (DEBUG) Serial.print(__VA_ARGS__); } while (0)
-#define debugln(...) \
-            do { if (DEBUG) Serial.println(__VA_ARGS__); } while (0)
 
 /*
  * we want to draw with pixels on an area of 4 cols and 5 rows like:
@@ -579,7 +574,7 @@ TFFace tinyFont[] =
   {
     //pixels
   {
-      0b00001110,
+      0b0000110,
       0b00001010,
       0b00001010,
       0b00001010,
@@ -885,37 +880,62 @@ TFFace tinyFont[] =
   },
 };
 
+#define TFLINE_LEN  (64 / TF_COLS)
+int16_t xOne, yOne;
+uint16_t w, h;
+unsigned long isAnimationDue;
+int delayBetweeenAnimations = 100;             // Smaller == faster
+const int panelResX = 64;   // Number of pixels wide of each INDIVIDUAL panel module.
+const int panelResY = 32;   // Number of pixels tall of each INDIVIDUAL panel module.
+const int panel_chain = 1;  // Total number of panels chained one to another
+int textXPosition = 0;        // center of screen - 8 (half of the text height)
+int textYPosition = 0;
 const int cfblack = 0;
 
-void TFDrawChar (PxMATRIX* d, char value, char xo, char yo, int col)
-{
+void TFDrawCharDMA (MatrixPanel_I2S_DMA *d, char value, int xo, int yo, int col) {
   int i, j, cfi = value - ' ';
   if (cfi > sizeof (tinyFont) / sizeof (TFFace))
   {
     debug("character code not supported: ");
     debugln(cfi + ' ');
   }
-  else
+  else {
     for (i = 0; i < TF_ROWS; i++)
     {
       for (j = 0; j < TF_COLS; j++)
       {
-        if (tinyFont[cfi].fface[i] & (1 << j))
+        if (tinyFont[cfi].fface[i] & (1 << j)){
           d->drawPixel (xo + TF_COLS - j, yo + i, col);
+        }
         else
           d->drawPixel (xo + TF_COLS - j, yo + i, cfblack);
       }
     }
+  }
 }
 
-#define TFLINE_LEN  (64 / TF_COLS)
-void TFDrawText (PxMATRIX* d, String text, char xo, char yo, int col)
-{
+void TFDrawTextDMA(MatrixPanel_I2S_DMA *d, String text, int xo, int yo, int col) {
   unsigned char lbuf[TFLINE_LEN+1] = {0};
   unsigned char *lptr = lbuf;
   text.getBytes (lbuf, TFLINE_LEN);
   for (; *lptr; lptr++, xo += TF_COLS)
   {
-    TFDrawChar (d, *lptr, xo, yo, col);
+    TFDrawCharDMA (d, *lptr, xo, yo, col);
+  }
+}
+
+void TFScrollTextDMA(MatrixPanel_I2S_DMA *d, String text, int xo, int yo, int window_length, int col) {
+  unsigned long now = millis();
+  int tlength = text.length() * TF_COLS;
+  if (textXPosition == 0) textXPosition -= xo;
+  if (now > isAnimationDue) {
+    isAnimationDue = now + delayBetweeenAnimations;
+    textXPosition -= 1;
+    // Checking is the very right of the text off screen to the left
+    if ((textXPosition + tlength) < xo) {
+      textXPosition = xo + window_length;
+    }
+    
+    TFDrawTextDMA(d, text, textXPosition, yo, col);
   }
 }
