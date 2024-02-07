@@ -186,7 +186,10 @@ void displayTemp() {
 //   }
 // }
 
-void displayCondition(int condM, int *ico, int **ani) {
+template<typename T, size_t size> 
+size_t GetArrLength(T(&)[size]){return size;}
+
+void displayCondition(int condM, int *ico, int **ani, int frames) {
   // int ss = timeClient.getSeconds();
   // // int wss = (ss % 30);
   // if (0 <= ss && ss <= 29) {
@@ -197,14 +200,13 @@ void displayCondition(int condM, int *ico, int **ani) {
   // }
   TFDrawTextDMA(dma_display, weather_text[condM], wtext_x, wtext_y, cc_wtext);
   if (config["WeatherAnimation"]) {
-    int aniLength = sizeof(ani) / sizeof(int);
     int cm = millis();    
     if ((cm - last_cm) > ani_speed)  // animation speed
     {
       last_cm = cm;
       DrawIconDMA(dma_display, ani[i_frame], nani_x, nani_y, 12, 12);
       i_frame++;
-      if (i_frame == aniLength) i_frame = 0;
+      if (i_frame == frames) i_frame = 0;
     }
   }
   else {
@@ -220,104 +222,104 @@ void displayConditions() {
     if (sval == "01d") {
       // condM = 1;  //sunny
       // DrawIconDMA(dma_display, sunny_ico, suny_ani[], xo, yo, 10, 5);
-      displayCondition(1, sun_ico, sun_ani);
+      displayCondition(1, sun_ico, sun_ani, GetArrLength(sun_ani));
 
       // DrawIconDMA(dma_display, sun_ico, nani_x, nani_y, 12, 12);
     }
     else if (sval == "01n") {
       // condM = 8;  //clear night
       // DrawIconDMA(dma_display, moony_ico, xo, yo, 10, 5);
-      displayCondition(8, moon_ico, moon_ani);
+      displayCondition(8, moon_ico, moon_ani, GetArrLength(moon_ani));
 
       // DrawIconDMA(dma_display, moon_ico, nani_x, nani_y, 12, 12);
     }
     else if (sval == "02d") {
       // condM = 2;  //partly cloudy day
       // DrawIconDMA(dma_display, cloudy_ico, xo, yo, 10, 5);
-      displayCondition(2, few_clouds_d_ico, few_clouds_d_ani);
+      displayCondition(2, few_clouds_d_ico, few_clouds_d_ani, GetArrLength(few_clouds_d_ani));
     }
     else if (sval == "02n") {
       // condM = 10;  //partly cloudy night
       // DrawIconDMA(dma_display, cloudyn_ico, xo, yo, 10, 5);
-      displayCondition(10, few_clouds_n_ico, few_clouds_n_ani);
+      displayCondition(10, few_clouds_n_ico, few_clouds_n_ani, GetArrLength(few_clouds_n_ani));
     }
     else if (sval == "03d") {
       // condM = 3;  //overcast day
       // DrawIconDMA(dma_display, ovrcst_ico, xo, yo, 10, 5);
-      displayCondition(3, scattered_clouds_ico, scattered_clouds_ani);
+      displayCondition(3, scattered_clouds_ico, scattered_clouds_ani, GetArrLength(scattered_clouds_ani));
 
       // DrawIconDMA(dma_display, scattered_clouds_ico, nani_x, nani_y, 12, 12);
     }
     else if (sval == "03n") {
       // condM = 11;  //overcast night
       // DrawIconDMA(dma_display, ovrcstn_ico, xo, yo, 10, 5);
-      displayCondition(11, scattered_clouds_ico, scattered_clouds_ani);
+      displayCondition(11, scattered_clouds_ico, scattered_clouds_ani, GetArrLength(scattered_clouds_ani));
 
       // DrawIconDMA(dma_display, scattered_clouds_ico, nani_x, nani_y, 12, 12);
     }
     else if (sval == "04d") {
       // condM = 3;  //overcast day
       // DrawIconDMA(dma_display, ovrcst_ico, xo, yo, 10, 5);
-      displayCondition(3, broken_clouds_ico, broken_clouds_ani);
+      displayCondition(3, broken_clouds_ico, broken_clouds_ani, GetArrLength(broken_clouds_ani));
 
       // DrawIconDMA(dma_display, broken_clouds_ico, nani_x, nani_y, 12, 12);
     }
     else if (sval == "04n") {
       // condM = 11;  //overcast night
       // DrawIconDMA(dma_display, ovrcstn_ico, xo, yo, 10, 5);
-      displayCondition(11, broken_clouds_ico, broken_clouds_ani);
+      displayCondition(11, broken_clouds_ico, broken_clouds_ani, GetArrLength(broken_clouds_ani));
 
       // DrawIconDMA(dma_display, broken_clouds_ico, nani_x, nani_y, 12, 12);
     }
     else if (sval == "09d") {
       // condM = 4;  //rain
       // DrawIconDMA(dma_display, rain_ico, rain_ani, xo, yo, 10, 5);
-      displayCondition(4, shower_rain_ico, shower_rain_ani);
+      displayCondition(4, shower_rain_ico, shower_rain_ani, GetArrLength(shower_rain_ani));
     }
     else if (sval == "09n") {
       // condM = 4;  //rain
       // DrawIconDMA(dma_display, rain_ico, rain_ani, xo, yo, 10, 5);
-      displayCondition(4, shower_rain_ico, shower_rain_ani);
+      displayCondition(4, shower_rain_ico, shower_rain_ani, GetArrLength(shower_rain_ani));
     }
     else if (sval == "10d") {
       // condM = 4;  //rain
       // DrawIconDMA(dma_display, rain_ico, rain_ani, xo, yo, 10, 5);
-      displayCondition(4, rain_d_ico, rain_d_ani);
+      displayCondition(4, rain_d_ico, rain_d_ani, GetArrLength(rain_d_ani));
     }
     else if (sval == "10n") {
       // condM = 4;  //rain
       // DrawIconDMA(dma_display, rain_ico, rain_ani, xo, yo, 10, 5);
-      displayCondition(4, rain_n_ico, rain_n_ani);
+      displayCondition(4, rain_n_ico, rain_n_ani, GetArrLength(rain_n_ani));
     }
     else if (sval == "11d") {
       // condM = 5;  //thunder
       // DrawIconDMA(dma_display, thndr_ico, xo, yo, 10, 5);
-      displayCondition(5, thunderstorm_ico, thunderstorm_ani);
+      displayCondition(5, thunderstorm_ico, thunderstorm_ani, GetArrLength(thunderstorm_ani));
     }
     else if (sval == "11n") {
       // condM = 5;  //thunder
       // DrawIconDMA(dma_display, thndr_ico, xo, yo, 10, 5);
-      displayCondition(5, thunderstorm_ico, thunderstorm_ani);
+      displayCondition(5, thunderstorm_ico, thunderstorm_ani, GetArrLength(thunderstorm_ani));
     }
     else if (sval == "13d") {
       // condM = 6;  //snow
       // DrawIconDMA(dma_display, snow_ico, xo, yo, 10, 5);
-      displayCondition(6, snow_ico, snow_ani);
+      displayCondition(6, snow_ico, snow_ani, GetArrLength(snow_ani));
     }
     else if (sval == "13n") {
       // condM = 6;  //snow
       // DrawIconDMA(dma_display, snow_ico, xo, yo, 10, 5);
-      displayCondition(6, snow_ico, snow_ani);
+      displayCondition(6, snow_ico, snow_ani, GetArrLength(snow_ani));
     }
     else if (sval == "50d") {
       // condM = 7;  //haze (day)
       // DrawIconDMA(dma_display, mist_ico, xo, yo, 10, 5);
-      displayCondition(7, mist_ico, mist_ani);
+      displayCondition(7, mist_ico, mist_ani, GetArrLength(mist_ani));
     }
     else if (sval == "50n") {
       // condM = 9;  //fog (night)
       // DrawIconDMA(dma_display, mistn_ico, xo, yo, 10, 5);
-      displayCondition(9, mist_ico, mist_ani);
+      displayCondition(9, mist_ico, mist_ani, GetArrLength(mist_ani));
     }
   }
 }
