@@ -204,8 +204,11 @@ void displayClock() {
     displayDayProgessBar();
     displayDayLightProgessBar();
 
-    if (clockStartingUp) { // If we didn't have a previous time. Just draw it without morphing.
-      dma_display->clearScreen();
+    if (clockStartingUp || (!config["Morphing"])) {
+      if (ss != prevss) { 
+        dma_display->fillRect(14, 7, 50, 15, cc_blk);
+        prevss = ss;
+      }
       digit0.Draw(ss % 10);
       digit1.Draw(ss / 10);
       digit2.Draw(mm % 10);
@@ -217,7 +220,7 @@ void displayClock() {
       clockStartingUp = false;
     }
     else {
-      if (ss!=prevss) { 
+      if (ss != prevss) { 
         int s0 = ss % 10;
         int s1 = ss / 10;
         if (s0!=digit0.Value()) digit0.Morph(s0);
@@ -225,7 +228,7 @@ void displayClock() {
         prevss = ss;
       }
 
-      if (mm!=prevmm) {
+      if (mm != prevmm) {
         int m0 = mm % 10;
         int m1 = mm / 10;
         if (m0!=digit2.Value()) digit2.Morph(m0);
@@ -234,7 +237,7 @@ void displayClock() {
         prevmm = mm;
       }
       
-      if (hh!=prevhh) {
+      if (hh != prevhh) {
         int h0 = hh % 10;
         int h1 = hh / 10;
         if (h0!=digit4.Value()) digit4.Morph(h0);
