@@ -13,6 +13,7 @@ JsonDocument DefaultConfig() {
     DefaultConfig["Military"] = false;
     DefaultConfig["Metric"] = false;
     DefaultConfig["WeatherAnimation"] = false;
+    DefaultConfig["Morphing"] = true;
     DefaultConfig["ColorPalette"] = "0";
     DefaultConfig["Brightness"] = "42";
     DefaultConfig["SSID"] = ""; //wifi network

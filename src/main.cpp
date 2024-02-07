@@ -117,7 +117,8 @@ void setup() {
   //start web
   httpsvr.begin();
   
-  delay(1000);
+  delay(2000);
+  dma_display->clearScreen();
   debugln(F("Setup Complete"));
 }
 
