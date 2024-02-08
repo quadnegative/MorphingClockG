@@ -142,7 +142,7 @@ int adjustPixel(int pixel) {
     }
     else {
         pixel = pixel * -1;
-        pixel = 32 + pixel;
+        pixel = 31 + pixel;
         if (pixel > 63) pixel = pixel - 64;
     }
     return pixel;
