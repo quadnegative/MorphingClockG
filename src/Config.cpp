@@ -2,6 +2,9 @@
 #include <ArduinoJson.h>
 #include "LittleFS.h"
 #include "Params.h"
+#include "Display.h"
+#include "Colors.h"
+#include "TinyFont.h"
 
 #define DEBUG 1
 #define debug(...) \
@@ -10,6 +13,13 @@
             do { if (DEBUG) Serial.println(__VA_ARGS__); } while (0)
 
 JsonDocument config;
+
+void rebootclock() {
+  dma_display->clearScreen();
+  TFDrawTextDMA(dma_display, String("  REBOOT  "), 10, 9, cc_bwht);
+  delay(2000);
+  ESP.restart();
+}
 
 String serializeConfig() {
   String configJSON;

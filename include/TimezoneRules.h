@@ -1,3 +1,6 @@
+#ifndef TIMEZONERULES_H
+#define TIMEZONERULES_H
+
 #include <Timezone.h>
 // US Eastern Time Zone (New York, Detroit)
 //TimeChangeRule myDST = {"EDT", Second, Sun, Mar, 2, -240};  // Eastern Daylight Time = UTC - 4 hours
@@ -31,3 +34,5 @@ Timezone usAT(usADT, usAST);
 TimeChangeRule usHADT = {"HADT", Second, Sun, Mar, 2, -420};
 TimeChangeRule usHAST = {"HAST", First, Sun, Nov, 2, -480};
 Timezone usHAT(usHADT, usHAST);
+
+#endif
