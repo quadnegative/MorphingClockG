@@ -64,9 +64,9 @@ void web_server() {
       //Validate WiFi Creds
       if ((postcfg["SSID"] != config["SSID"]) || (postcfg["Password"] != config["Password"])) {
         if (!connect_wifi(postcfg["SSID"], postcfg["Password"])) {
-          debugln(F("Wifi Connect failed, will try prior SSID and Password"));
+          debugln(F("WIFI: Connect failed, will try prior SSID and Password"));
           if (!connect_wifi(config["SSID"], config["Password"])) {
-            ESP.restart();  //Give up reboot
+            rebootclock();
           }
           else {
             postcfg["SSID"] = config["SSID"];
@@ -116,7 +116,7 @@ void web_server() {
       debugln(doc["ConfigReset"].as<String>());
 
       //Add Global var for valid reset window from last page load
-      if (doc["ConfigReset"] == "true") {
+      if (doc["ConfigReset"].as<String>() == "true") {
         httpcli.println(F("HTTP/1.0 200 OK"));
         httpcli.println(F("Content-Type: application/json"));
         httpcli.println();
@@ -125,7 +125,7 @@ void web_server() {
 
         init_default_config();
         vars_write();
-        resetclock;
+        rebootclock();
       }
       else {
         httpcli.println(F("HTTP/1.0 401 Unauthorized"));
@@ -136,16 +136,31 @@ void web_server() {
       }
     }
     else if ((pidx = httprq.indexOf("POST /reboot")) != -1) {
-      httpcli.println(F("HTTP/1.1 200 OK"));
-      httpcli.println(F("Content-Type: text/javascript"));
-      httpcli.println(F("Access-Control-Allow-Origin: *"));
-      httpcli.println(F("Connection: close"));  // the connection will be closed after completion of the response
-      httpcli.println(F(""));
-      // give the web browser time to receive the data
-      delay(1);
-      // close the connection:
-      httpcli.stop();
-      //resetclock();
+      int index = httprq.indexOf("\r\n\r\n");
+      String body = "";
+      body = httprq.substring(index+1);
+      debugln(body);
+
+      JsonDocument doc = deserializeConfig(body);
+      debugln(doc["rebootClock"].as<String>());
+
+      //Add Global var for valid reboot window from last page load
+      if (doc["rebootClock"].as<String>() == "true") {
+        httpcli.println(F("HTTP/1.0 200 OK"));
+        httpcli.println(F("Content-Type: application/json"));
+        httpcli.println();
+        delay(1);
+        httpcli.stop();
+
+        rebootclock();
+      }
+      else {
+        httpcli.println(F("HTTP/1.0 401 Unauthorized"));
+        httpcli.println(F("Content-Type: application/json"));
+        httpcli.println();
+        delay(1);
+        httpcli.stop();
+      }
     }
     //Get /morph.js
     else if ((pidx = httprq.indexOf("GET /morph.js")) != -1) {

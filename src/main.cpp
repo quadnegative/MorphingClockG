@@ -2,14 +2,15 @@
 #include <WiFiManager.h> 
 #include <ESPmDNS.h>
 #include "Config.h"
+#include "Display.h"
+#include "Colors.h"
+#include "Main.h"
 #include "Icons.h"
 #include "Location.h"
 #include "NTP.h"
 #include "TinyFont.h"
 #include "Clock.h"
 #include "Weather.h"
-#include "Display.h"
-#include "Colors.h"
 #include "Web.h"
 
 /* #region variables */
@@ -19,14 +20,6 @@ WiFiUDP ntpUDP;
 /* #endregion */
 
 /* #region Setups */
-void resetclock() {
-  dma_display->clearScreen();
-  TFDrawTextDMA(dma_display, String("  RESTART  "), 10, 9, cc_blu);
-  TFDrawTextDMA(dma_display, String("MORPH CLOCK"), 10, 16, cc_blu);
-  delay(2000);
-  ESP.restart();
-}
-
 bool connect_wifi(String n_ssid, String n_pass) {
   int c_cnt = 0;
   debug(F("WIFI: Trying Connection: "));
@@ -41,7 +34,7 @@ bool connect_wifi(String n_ssid, String n_pass) {
     debug(".");
     c_cnt++;
     if (c_cnt > 50) {
-      debugln(F("Wifi Connect Failed"));
+      debugln(F("WIFI: Connect Failed"));
       return false;
     }
   }
@@ -55,9 +48,9 @@ void setupWIFI(bool verbose) {
   if (!connect_wifi(config["SSID"].as<String>(), config["Password"].as<String>())) {  // Try settings in config file
     JsonDocument defaultconfig = DefaultConfig();
     if (!connect_wifi(defaultconfig["SSID"].as<String>(), defaultconfig["Password"].as<String>())) {  // Try settings in params.h
-      if (verbose) debugln(F("Cannot connect to anything, RESTART ESP"));
+      if (verbose) debugln(F("WIFI: Cannot connect to anything, RESTART ESP"));
       if (verbose) dma_display->drawIcon(x_ico, 4 , 1, 5, 5);
-      //resetclock();
+      rebootclock();
     }
   }
   dma_display->drawIcon(check_ico, 4 , 1, 5, 5);
@@ -76,6 +69,7 @@ void setupmDNS(bool verbose) {
 /* #endregion */
 
 void setup() {
+  if (Serial) Serial.end();
   Serial.begin(9600);
   while (!Serial){ 
     delay(10);
@@ -124,7 +118,7 @@ void setup() {
 
 void loop() {
   if (WiFi.status() != WL_CONNECTED) {
-    WiFi.reconnect();
+    setup();
   }
 
   timeClient.update();  

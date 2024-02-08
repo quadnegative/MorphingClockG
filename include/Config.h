@@ -13,6 +13,7 @@
 
 extern JsonDocument config;
 
+void rebootclock();
 void init_config();
 String serializeConfig();
 JsonDocument deserializeConfig(String json);

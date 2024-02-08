@@ -258,8 +258,8 @@ function saveConfig() {
 
 function resetConfig() {
     $('.modal-footer').hide();
-    $('#modalLabel')[0].innerText = 'Reseting';
-    $('.modal-body')[0].innerHTML = '<div class="spinner-border" role="status" id="spinner"></div>';
+    $('#modalLabel')[0].innerText = 'Resetting';
+    $('.modal-body')[0].innerHTML = '<div class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
     reset = {};
     reset["ConfigReset"] = "true";
     resetJSON = JSON.stringify(reset, null, 4);
@@ -282,11 +282,48 @@ function resetConfig() {
     });
 }
 
+function rebootClock() {
+    $('.modal-footer').hide();
+    $('#modalLabel')[0].innerText = 'Rebooting';
+    $('.modal-body')[0].innerHTML = '<div class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+    reboot = {};
+    reboot["rebootClock"] = "true";
+    rebootJSON = JSON.stringify(reboot, null, 4);
+    const apiUrl = '/reboot';
+    const requestOptions = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: rebootJSON,
+    };
+    fetch(apiUrl, requestOptions)
+    .then(response => {
+        setTimeout(function () { }, 15000);
+        location.reload();
+    })
+    .catch(error => {
+        $('.modal-body')[0].innerHTML = '<p>Reboot Failed!</p>';
+        ('Error:', error);
+    });
+}
+
 function resetModal() {
     $('#modalLabel')[0].innerText = 'Reset Config';
     $('.modal-body')[0].innerHTML = '<p>This will clear the crrent config and restore the default values from the params.h file.</p><br><p>Are you sure you want to continue?</p>';
     $('.modal-footer').show();
     $('.modal').modal('show');
+    $('#btnReset').show();
+    $('#btnReboot').hide();
+}
+
+function rebootModal() {
+    $('#modalLabel')[0].innerText = 'Reboot';
+    $('.modal-body')[0].innerHTML = '<p>Are you sure you want to reboot this clock?</p>';
+    $('.modal-footer').show();
+    $('.modal').modal('show');
+    $('#btnReset').hide();
+    $('#btnReboot').show();
 }
 
 $(window).on('load', function(){
