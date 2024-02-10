@@ -118,7 +118,7 @@ void setup() {
 
 void loop() {
   if (WiFi.status() != WL_CONNECTED) {
-    setup();
+    setupWIFI(false);
   }
 
   timeClient.update();  

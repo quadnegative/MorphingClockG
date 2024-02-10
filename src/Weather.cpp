@@ -107,6 +107,7 @@ void getWeatherjson(bool verbose, int trys) {
     }
   }
   http.end();
+  clockStartingUp = true;
   if (cnt > 3 && cnt != 9) {
     if (verbose) dma_display->drawIcon(x_ico, 4 , 25, 5, 5);
   }
